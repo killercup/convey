@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Pascal Hertleif <killercup@gmail.com>"]
 
 [dependencies]
+termcolor = "1.0.4"
