@@ -1,38 +1,14 @@
 extern crate termcolor;
+
 use std::io::Write;
 use termcolor::WriteColor;
 
 mod fmt;
-use fmt::{TerminalFormatter, TerminalFormatterError, TerminalOutput};
+pub(crate) use fmt::{TerminalFormatter, TerminalFormatterError, TerminalOutput};
 
-struct Text(String);
-
-impl TerminalOutput for Text {
-    type Handle = ();
-
-    fn output(&self, f: &mut TerminalFormatter) -> Result<(), TerminalFormatterError> {
-        f.write(self.0.as_bytes())?;
-        Ok(())
-    }
-}
-
-// fixme(killercup): how to deal with this associated type here?
-// refactor trait to return a known (dynamic) type instead?
-struct Color(
-    Vec<Box<dyn TerminalOutput<Handle = ()>>>,
-    termcolor::ColorSpec,
-);
-
-impl TerminalOutput for Color {
-    type Handle = ();
-
-    fn output(&self, f: &mut TerminalFormatter) -> Result<(), TerminalFormatterError> {
-        f.set_color(&self.1)?;
-        self.0.iter().try_for_each(|x| x.output(f))?;
-        f.reset()?;
-        Ok(())
-    }
-}
+mod components;
+pub use components::color::Color;
+pub use components::text::Text;
 
 #[cfg(test)]
 mod tests {
