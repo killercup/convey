@@ -1,53 +1,51 @@
 extern crate termcolor;
+extern crate serde;
+extern crate serde_json;
+extern crate failure;
+#[macro_use] extern crate failure_derive;
 
-use std::io::Write;
-use termcolor::WriteColor;
-
-mod fmt;
-pub(crate) use fmt::{TerminalFormatter, TerminalFormatterError, TerminalOutput};
+pub mod targets;
 
 mod components;
 pub use components::color::Color;
 pub use components::text::Text;
+use std::marker::PhantomData;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub struct Output<T> {
+    targets: Vec<Box<targets::Formatter>>,
+    state: PhantomData<T>,
+}
 
-    fn assert_bytes_as_str(left: &[u8], right: &[u8]) {
-        let left = String::from_utf8(left.to_vec()).unwrap();
-        let right = String::from_utf8(right.to_vec()).unwrap();
-        assert_eq!(left, right);
+pub struct OutputBuilding;
+pub struct Outputting;
+
+pub fn new() -> Output<OutputBuilding> {
+    Output {
+        targets: vec![],
+        state: PhantomData,
+    }
+}
+
+impl Output<OutputBuilding> {
+    pub fn add<F: targets::Formatter + 'static>(mut self, new_output: F) -> Self {
+        self.targets.push(Box::new(new_output));
+        self
     }
 
-    #[test]
-    fn write_text() {
-        let mut out = fmt::TestOutput::no_color();
-
-        {
-            let mut fmt = TerminalFormatter::new(&mut out);
-            let x = Text(String::from("foo"));
-            x.output(&mut fmt).unwrap();
-        }
-
-        assert_bytes_as_str(out.as_slice(), b"foo");
+    pub fn build(self) -> Result<Output<Outputting>, failure::Error> {
+        Ok(Output {
+            targets: self.targets,
+            state: PhantomData,
+        })
     }
+}
 
-    #[test]
-    fn write_color() {
-        let mut out = fmt::TestOutput::ansi();
-
-        {
-            let mut fmt = TerminalFormatter::new(&mut out);
-            let x = Color(vec![Box::new(Text(String::from("foo")))], {
-                use termcolor::{Color, ColorSpec};
-                let mut c = ColorSpec::new();
-                c.set_fg(Some(Color::Blue));
-                c
-            });
-            x.output(&mut fmt).unwrap();
+impl Output<Outputting> {
+    pub fn print<'f, 'i: 'f, O: targets::OutputTarget<'f>>(&mut self, item: &'i O) -> Result<(), failure::Error> {
+        for target in &mut self.targets {
+            //target.print(item)?;
         }
 
-        assert_bytes_as_str(out.as_slice(), "\u{1b}[0m\u{1b}[34mfoo\u{1b}[0m".as_bytes());
+        Ok(())
     }
 }

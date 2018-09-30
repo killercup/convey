@@ -1,14 +1,19 @@
 use std::io::Write;
 
-use {TerminalOutput, TerminalFormatter, TerminalFormatterError};
+use targets::{Human, HumanError, HumanOutput, Json, JsonError, JsonOutput};
 
 pub struct Text(pub String);
 
-impl TerminalOutput for Text {
-    type Handle = ();
-
-    fn output(&self, f: &mut TerminalFormatter) -> Result<(), TerminalFormatterError> {
+impl<'f> HumanOutput<'f> for Text {
+    fn human_output(&self, f: &mut Human<'f>) -> Result<(), HumanError> {
         f.write(self.0.as_bytes())?;
+        Ok(())
+    }
+}
+
+impl<'f> JsonOutput<'f> for Text {
+    fn json_output(&self, f: &mut Json<'f>) -> Result<(), JsonError> {
+        f.write(&self.0)?;
         Ok(())
     }
 }
