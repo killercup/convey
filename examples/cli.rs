@@ -1,18 +1,17 @@
 extern crate output;
 extern crate failure;
 
-use output::{targets::{Json, Human}, Text};
+use output::{json, human, components::{text}};
 use std::fs::File;
 
 fn main() -> Result<(), failure::Error> {
     let mut out = output::new()
-        .add(Json::file("foo.log")?)
-        .add(Human::stdout()?)
-        .build()?;
+        .add(json::file("foo.log")?)
+        .add(human::stdout()?);
 
     let x = 42;
 
-    out.print(&Text(x.to_string()));
+    out.print(&text(x.to_string()));
 
     Ok(())
 }
