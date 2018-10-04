@@ -1,13 +1,10 @@
 extern crate failure;
 extern crate output;
-#[macro_use]
-extern crate serde_derive;
 
 use output::{
     components::{color, text},
     human, json,
 };
-use std::fs::File;
 
 fn main() -> Result<(), failure::Error> {
     let mut out = output::new()

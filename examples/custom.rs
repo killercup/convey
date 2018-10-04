@@ -7,7 +7,6 @@ use output::{
     components::{color, text},
     human, json,
 };
-use std::fs::File;
 
 fn main() -> Result<(), failure::Error> {
     let mut out = output::new()
