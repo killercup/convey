@@ -1,9 +1,8 @@
-use failure::Error;
 use serde::Serialize;
 use serde_json::to_writer as write_json;
 use std::io::Write;
 use std::path::Path;
-use Target;
+use {Error, Target};
 
 pub fn file<T: AsRef<Path>>(name: T) -> Result<Target, Error> {
     use std::fs::File;

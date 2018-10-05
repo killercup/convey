@@ -1,6 +1,5 @@
-use failure::Error;
 use termcolor::{ColorSpec, WriteColor};
-use {human, json, RenderOutput};
+use {human, json, Error, RenderOutput};
 
 pub fn span() -> Span {
     Span::default()

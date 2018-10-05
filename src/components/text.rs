@@ -1,6 +1,5 @@
-use failure::Error;
 use std::io::Write;
-use {human, json, RenderOutput};
+use {human, json, Error, RenderOutput};
 
 pub fn text<T: Into<String>>(input: T) -> Text {
     Text(input.into())

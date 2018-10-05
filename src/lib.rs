@@ -1,4 +1,6 @@
 extern crate failure;
+#[macro_use]
+extern crate failure_derive;
 extern crate serde;
 extern crate termcolor;
 #[macro_use]
@@ -28,8 +30,11 @@ pub enum Target {
     Json(json::Formatter),
 }
 
+mod error;
+pub use error::Error;
+
 impl Output {
-    pub fn print<O: RenderOutput>(&mut self, item: O) -> Result<(), ::failure::Error> {
+    pub fn print<O: RenderOutput>(&mut self, item: O) -> Result<(), Error> {
         for target in &mut self.targets {
             match target {
                 Target::Human(fmt) => {
@@ -48,19 +53,19 @@ impl Output {
 }
 
 pub trait RenderOutput {
-    fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), ::failure::Error>;
-    fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), ::failure::Error>;
+    fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error>;
+    fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), Error>;
 }
 
 impl<'a, T> RenderOutput for &'a T
 where
     T: RenderOutput,
 {
-    fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), ::failure::Error> {
+    fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
         (*self).render_for_humans(fmt)
     }
 
-    fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), ::failure::Error> {
+    fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), Error> {
         (*self).render_json(fmt)
     }
 }
