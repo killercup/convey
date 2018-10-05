@@ -1,4 +1,5 @@
 extern crate failure;
+#[macro_use]
 extern crate output;
 #[macro_use]
 extern crate serde_derive;
@@ -46,10 +47,7 @@ fn main() -> Result<(), failure::Error> {
             Ok(())
         }
 
-        fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), Error> {
-            fmt.write(self)?;
-            Ok(())
-        }
+        render_json!();
     }
 
     out.print(&ErrorMessage {

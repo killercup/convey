@@ -24,3 +24,13 @@ impl Formatter {
         Ok(())
     }
 }
+
+#[macro_export]
+macro_rules! render_json {
+    () => {
+        fn render_json(&self, fmt: &mut $crate::json::Formatter) -> Result<(), $crate::Error> {
+            fmt.write(self)?;
+            Ok(())
+        }
+    }
+}
