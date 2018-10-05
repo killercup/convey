@@ -12,6 +12,7 @@ pub struct Formatter {
     pub(crate) writer: StandardStream,
 }
 
+#[doc(hidden)]
 #[macro_export]
 macro_rules! __inner_span {
     ($span:ident, $attr:ident = $val:expr, $($token:tt)*) => {
