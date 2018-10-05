@@ -1,4 +1,6 @@
 use std::io;
+use termcolor::ParseColorError;
+use serde_json::Error as JsonError;
 
 /// Output's error type
 #[derive(Fail, Debug)]
@@ -8,10 +10,10 @@ pub enum Error {
     Io(io::Error),
     /// Error parsing a color value
     #[fail(display = "{}", _0)]
-    ParseColorError(termcolor::ParseColorError),
+    ParseColorError(ParseColorError),
     /// Error dealing with JSON
     #[fail(display = "{}", _0)]
-    Json(serde_json::Error),
+    Json(JsonError),
 }
 
 impl From<io::Error> for Error {
@@ -20,14 +22,14 @@ impl From<io::Error> for Error {
     }
 }
 
-impl From<termcolor::ParseColorError> for Error {
-    fn from(x: termcolor::ParseColorError) -> Self {
+impl From<ParseColorError> for Error {
+    fn from(x: ParseColorError) -> Self {
         Error::ParseColorError(x)
     }
 }
 
-impl From<serde_json::Error> for Error {
-    fn from(x: serde_json::Error) -> Self {
+impl From<JsonError> for Error {
+    fn from(x: JsonError) -> Self {
         Error::Json(x)
     }
 }
