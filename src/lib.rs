@@ -22,6 +22,9 @@ extern crate termcolor;
 #[macro_use]
 extern crate serde_derive;
 extern crate serde_json;
+#[cfg(test)]
+#[macro_use]
+extern crate proptest;
 
 use std::io::Write;
 

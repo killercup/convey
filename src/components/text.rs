@@ -27,3 +27,19 @@ impl Render for Text {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::text;
+    use {human, Render};
+
+    proptest! {
+        #[test]
+        fn renders_text_exactly(s in "\\PC") {
+            let item = text(&s);
+            let test_output = human::test();
+            item.render_for_humans(&mut test_output.formatter()).unwrap();
+            prop_assert_eq!(test_output.to_string(), s);
+        }
+    }
+}
