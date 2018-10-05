@@ -17,7 +17,7 @@ pub struct Output {
 }
 
 impl Output {
-    pub fn add(mut self, target: Target) -> Self {
+    pub fn add_target(mut self, target: Target) -> Self {
         self.targets.push(target);
         self
     }
@@ -34,11 +34,11 @@ impl Output {
             match target {
                 Target::Human(fmt) => {
                     item.render_for_humans(fmt)?;
-                    fmt.writer.write(b"\n")?;
+                    fmt.writer.write_all(b"\n")?;
                 }
                 Target::Json(fmt) => {
                     item.render_json(fmt)?;
-                    fmt.writer.write(b"\n")?;
+                    fmt.writer.write_all(b"\n")?;
                 }
             }
         }

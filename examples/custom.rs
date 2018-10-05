@@ -10,8 +10,8 @@ use output::{
 
 fn main() -> Result<(), failure::Error> {
     let mut out = output::new()
-        .add(json::file("target/foo.log")?)
-        .add(human::stdout()?);
+        .add_target(json::file("target/foo.log")?)
+        .add_target(human::stdout()?);
 
     #[derive(Serialize)]
     struct ErrorMessage {
