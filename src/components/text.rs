@@ -6,6 +6,10 @@ pub fn text<T: Into<Cow<'static, str>>>(input: T) -> Text {
     Text(input.into())
 }
 
+pub fn newline() -> Text {
+    text("\n")
+}
+
 #[derive(Clone, Serialize)]
 pub struct Text(Cow<'static, str>);
 

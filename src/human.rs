@@ -11,3 +11,38 @@ pub fn stdout() -> Result<Target, io::Error> {
 pub struct Formatter {
     pub(crate) writer: StandardStream,
 }
+
+#[macro_export]
+macro_rules! __inner_span {
+    ($span:ident, $attr:ident = $val:expr, $($token:tt)*) => {
+        $span = $span.$attr($val)?;
+        __inner_span!($span, $($token)*);
+    };
+    ($span:ident, [$($item:expr,)*]) => {
+        $(
+            $span = $span.add_item($item);
+        )*
+    };
+}
+
+#[macro_export]
+macro_rules! span {
+    ($($token:tt)*) => {
+        {
+            let mut the_span = span();
+            __inner_span!(the_span, $($token)*);
+            the_span
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! render_for_humans {
+    ($($item:expr,)*) => {
+        fn render_for_humans(&self, fmt: &mut $crate::human::Formatter) -> Result<(), $crate::Error> {
+            let span = span!([ $( $item, )* ]);
+            span.render_for_humans(fmt)?;
+            Ok(())
+        }
+    }
+}

@@ -5,7 +5,7 @@ extern crate output;
 extern crate serde_derive;
 
 use output::{
-    components::{span, text},
+    components::{span, text, newline},
     human, json,
 };
 
@@ -21,31 +21,16 @@ fn main() -> Result<(), failure::Error> {
         message: String,
     }
 
-    use failure::Error;
     use output::RenderOutput;
 
     impl RenderOutput for ErrorMessage {
-        fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
-            span()
-                .add_item(
-                    span()
-                        .fg("white")?
-                        .bg("black")?
-                        .add_item(text(self.code.to_string()))
-                        .add_item(text(" ")),
-                )
-                .add_item(
-                    span()
-                        .fg("red")?
-                        .bg("black")?
-                        .add_item(text(self.name.clone())),
-                )
-                .add_item(text("\n> "))
-                .add_item(text(self.message.clone()))
-                .render_for_humans(fmt)?;
-
-            Ok(())
-        }
+        render_for_humans![
+            span!(fg = "white", bg = "black", [text(self.code.to_string()), text(" "),]),
+            span!(fg = "red", bg = "black", [text(self.name.clone()),]),
+            newline(),
+            text("> "),
+            text(self.message.clone()),
+        ];
 
         render_json!();
     }
