@@ -4,7 +4,7 @@ extern crate output;
 extern crate serde_derive;
 
 use output::{
-    components::{color, text},
+    components::{span, text},
     human, json,
 };
 
@@ -25,16 +25,16 @@ fn main() -> Result<(), failure::Error> {
 
     impl RenderOutput for ErrorMessage {
         fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
-            color()
+            span()
                 .add_item(
-                    color()
-                        .fg("red")?
+                    span()
+                        .fg("white")?
                         .bg("black")?
                         .add_item(text(self.code.to_string()))
                         .add_item(text(" ")),
                 )
                 .add_item(
-                    color()
+                    span()
                         .fg("red")?
                         .bg("black")?
                         .add_item(text(self.name.clone())),

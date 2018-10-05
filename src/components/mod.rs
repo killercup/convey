@@ -1,5 +1,5 @@
-pub use self::color::color;
+pub use self::span::span;
 pub use self::text::text;
 
-mod color;
+mod span;
 mod text;

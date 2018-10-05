@@ -2,7 +2,7 @@ extern crate failure;
 extern crate output;
 
 use output::{
-    components::{color, text},
+    components::{span, text},
     human, json,
 };
 
@@ -15,7 +15,7 @@ fn main() -> Result<(), failure::Error> {
 
     out.print(&text(x.to_string()))?;
 
-    out.print(&color().fg("blue")?.bg("yellow")?.add_item(text("hello")))?;
+    out.print(&span().fg("blue")?.bg("yellow")?.add_item(text("hello")))?;
 
     Ok(())
 }

@@ -2,18 +2,18 @@ use failure::Error;
 use termcolor::{ColorSpec, WriteColor};
 use {human, json, RenderOutput};
 
-pub fn color() -> Color {
-    Color::default()
+pub fn span() -> Span {
+    Span::default()
 }
 
 #[derive(Default)]
-pub struct Color {
+pub struct Span {
     items: Vec<Box<RenderOutput>>,
     fg: Option<::termcolor::Color>,
     bg: Option<::termcolor::Color>,
 }
 
-impl Color {
+impl Span {
     pub fn add_item<T: RenderOutput + 'static>(mut self, item: T) -> Self {
         self.items.push(Box::new(item));
         self
@@ -30,7 +30,7 @@ impl Color {
     }
 }
 
-impl RenderOutput for Color {
+impl RenderOutput for Span {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
         fmt.writer
             .set_color(ColorSpec::new().set_fg(self.fg).set_bg(self.bg))?;
