@@ -1,12 +1,13 @@
 use std::io::Write;
 use {human, json, Error, RenderOutput};
+use std::borrow::Cow;
 
-pub fn text<T: Into<String>>(input: T) -> Text {
+pub fn text<T: Into<Cow<'static, str>>>(input: T) -> Text {
     Text(input.into())
 }
 
 #[derive(Clone, Serialize)]
-pub struct Text(String);
+pub struct Text(Cow<'static, str>);
 
 impl RenderOutput for Text {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
