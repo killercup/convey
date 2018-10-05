@@ -1,6 +1,6 @@
+use serde_json::Error as JsonError;
 use std::io;
 use termcolor::ParseColorError;
-use serde_json::Error as JsonError;
 
 /// Output's error type
 #[derive(Fail, Debug)]
