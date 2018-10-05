@@ -72,10 +72,8 @@ macro_rules! render_for_humans {
 
 mod test_helper {
     use super::Formatter;
-    use std::io;
-    use std::sync::{Arc, RwLock};
-    use termcolor::{Buffer, ColorSpec, WriteColor};
-    use Target;
+    use termcolor::Buffer;
+    use {test_buffer::TestBuffer, Target};
 
     /// Create a test output target
     ///
@@ -100,30 +98,25 @@ mod test_helper {
     /// }
     /// ```
     pub fn test() -> TestTarget {
-        TestTarget::new(Buffer::no_color())
+        TestTarget {
+            buffer: Buffer::no_color().into(),
+        }
     }
 
     /// Create a test out target that also contains ANSI color codes
     ///
     /// For usage, see [`test()`].
     pub fn test_with_color() -> TestTarget {
-        TestTarget::new(Buffer::ansi())
+        TestTarget {
+            buffer: Buffer::ansi().into(),
+        }
     }
 
     pub struct TestTarget {
         buffer: TestBuffer,
     }
 
-    #[derive(Clone)]
-    struct TestBuffer(Arc<RwLock<Buffer>>);
-
     impl TestTarget {
-        fn new(buffer: Buffer) -> Self {
-            TestTarget {
-                buffer: TestBuffer(Arc::new(RwLock::new(buffer))),
-            }
-        }
-
         pub fn formatter(&self) -> Formatter {
             Formatter {
                 writer: Box::new(self.buffer.clone()),
@@ -138,40 +131,6 @@ mod test_helper {
             let target = self.buffer.0.clone();
             let buffer = target.read().unwrap();
             String::from_utf8_lossy(buffer.as_slice()).to_string()
-        }
-    }
-
-    impl io::Write for TestBuffer {
-        fn write(&mut self, buf: &[u8]) -> Result<usize, io::Error> {
-            let target = self.0.clone();
-            let mut buffer = target.write().unwrap();
-            buffer.write(buf)
-        }
-
-        fn flush(&mut self) -> Result<(), io::Error> {
-            let target = self.0.clone();
-            let mut buffer = target.write().unwrap();
-            buffer.flush()
-        }
-    }
-
-    impl WriteColor for TestBuffer {
-        fn supports_color(&self) -> bool {
-            let target = self.0.clone();
-            let buffer = target.read().unwrap();
-            buffer.supports_color()
-        }
-
-        fn set_color(&mut self, spec: &ColorSpec) -> Result<(), io::Error> {
-            let target = self.0.clone();
-            let mut buffer = target.write().unwrap();
-            buffer.set_color(spec)
-        }
-
-        fn reset(&mut self) -> Result<(), io::Error> {
-            let target = self.0.clone();
-            let mut buffer = target.write().unwrap();
-            buffer.reset()
         }
     }
 }
