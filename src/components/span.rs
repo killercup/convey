@@ -94,3 +94,29 @@ impl Render for Span {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::span;
+    use components::text;
+    use {human, json, Render};
+
+    #[test]
+    fn renders_span_children() {
+        let item = span()
+            .add_item(text("one"))
+            .add_item(text("two"))
+            .add_item(span().add_item(text("three")));
+
+        let human_output = human::test();
+        item.render_for_humans(&mut human_output.formatter())
+            .unwrap();
+        assert_eq!(&human_output.to_string(), "onetwothree");
+
+        let json = json::test();
+        item.render_json(&mut json.formatter()).unwrap();
+        assert_eq!(json.to_string(), "\"one\"\n\"two\"\n\"three\"\n");
+    }
+
+    // TODO: Add proptest tests
+}
