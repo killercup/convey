@@ -38,8 +38,9 @@ macro_rules! span {
 
 #[macro_export]
 macro_rules! render_for_humans {
-    ($($item:expr,)*) => {
+    ($this:ident -> [$($item:expr,)*]) => {
         fn render_for_humans(&self, fmt: &mut $crate::human::Formatter) -> Result<(), $crate::Error> {
+            let $this = self;
             let span = span!([ $( $item, )* ]);
             span.render_for_humans(fmt)?;
             Ok(())

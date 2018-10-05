@@ -24,13 +24,13 @@ fn main() -> Result<(), failure::Error> {
     use output::RenderOutput;
 
     impl RenderOutput for ErrorMessage {
-        render_for_humans![
-            span!(fg = "white", bg = "black", [text(self.code.to_string()), text(" "),]),
-            span!(fg = "red", bg = "black", [text(self.name.clone()),]),
+        render_for_humans!(this -> [
+            span!(fg = "white", bg = "black", [text(this.code.to_string()), text(" "),]),
+            span!(fg = "red", bg = "black", [text(this.name.clone()),]),
             newline(),
             text("> "),
-            text(self.message.clone()),
-        ];
+            text(this.message.clone()),
+        ]);
 
         render_json!();
     }
