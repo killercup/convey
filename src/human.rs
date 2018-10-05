@@ -75,12 +75,15 @@ mod test_helper {
     use std::io;
     use std::sync::{Arc, RwLock};
     use termcolor::{Buffer, ColorSpec, WriteColor};
-    use {Error, Target};
+    use Target;
 
     /// Create a test output target
     ///
     /// This will drop all color information! If you want test colored output, use
     /// [`test_with_color`] instead.
+    ///
+    /// **Note:** This is intended for usage in tests; this and the methods you can call out in will
+    /// often just panic instead of return `Result`s.
     ///
     /// # Usage
     ///
@@ -88,23 +91,23 @@ mod test_helper {
     /// extern crate output;
     ///
     /// fn main() -> Result<(), output::Error> {
-    ///     let test_target = output::human::test()?;
-    ///     let mut out = output::new().add_target(test_target.target()?);
+    ///     let test_target = output::human::test();
+    ///     let mut out = output::new().add_target(test_target.target());
     ///     out.print(output::components::text("lorem ipsum"))?;
     ///
-    ///     assert_eq!(test_target.as_string(), "lorem ipsum\n");
+    ///     assert_eq!(test_target.to_string(), "lorem ipsum\n");
     ///     Ok(())
     /// }
     /// ```
-    pub fn test() -> Result<TestTarget, Error> {
-        Ok(TestTarget::new(Buffer::no_color()))
+    pub fn test() -> TestTarget {
+        TestTarget::new(Buffer::no_color())
     }
 
     /// Create a test out target that also contains ANSI color codes
     ///
     /// For usage, see [`test()`].
-    pub fn test_with_color() -> Result<TestTarget, Error> {
-        Ok(TestTarget::new(Buffer::ansi()))
+    pub fn test_with_color() -> TestTarget {
+        TestTarget::new(Buffer::ansi())
     }
 
     pub struct TestTarget {
@@ -121,13 +124,17 @@ mod test_helper {
             }
         }
 
-        pub fn target(&self) -> Result<Target, Error> {
-            Ok(Target::Human(Formatter {
+        pub fn formatter(&self) -> Formatter {
+            Formatter {
                 writer: Box::new(self.buffer.clone()),
-            }))
+            }
         }
 
-        pub fn as_string(&self) -> String {
+        pub fn target(&self) -> Target {
+            Target::Human(self.formatter())
+        }
+
+        pub fn to_string(&self) -> String {
             let target = self.buffer.0.clone();
             let buffer = target.read().unwrap();
             String::from_utf8_lossy(buffer.as_slice()).to_string()
