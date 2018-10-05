@@ -16,7 +16,7 @@ pub struct Formatter {
     pub(crate) writer: StandardStream,
 }
 
-/// Shorthand for writing the `render_for_humans` method of the `RenderOutput`  trait
+/// Shorthand for writing the `render_for_humans` method of the `Render`  trait
 ///
 /// # Examples
 ///
@@ -24,7 +24,7 @@ pub struct Formatter {
 /// #[macro_use] extern crate output;
 /// #[macro_use] extern crate serde_derive;
 ///
-/// use output::{components::{text, newline}, RenderOutput};
+/// use output::{components::{text, newline}, Render};
 ///
 /// #[derive(Serialize)]
 /// struct Message {
@@ -32,7 +32,7 @@ pub struct Formatter {
 ///     body: String,
 /// }
 ///
-/// impl RenderOutput for Message {
+/// impl Render for Message {
 ///     // because `self` is a keyword, we need to use something else
 ///     render_for_humans!(this -> [
 ///         // compose output components

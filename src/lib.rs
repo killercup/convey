@@ -61,7 +61,7 @@ pub use error::Error;
 
 impl Output {
     /// Print some item to the currently active output targets
-    pub fn print<O: RenderOutput>(&mut self, item: O) -> Result<(), Error> {
+    pub fn print<O: Render>(&mut self, item: O) -> Result<(), Error> {
         for target in &mut self.targets {
             match target {
                 Target::Human(fmt) => {
@@ -80,7 +80,7 @@ impl Output {
 }
 
 /// Implement this for your own components
-pub trait RenderOutput {
+pub trait Render {
     /// How to render your type for humans
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error>;
     /// How to render your type to JSON
@@ -91,9 +91,9 @@ pub trait RenderOutput {
     fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), Error>;
 }
 
-impl<'a, T> RenderOutput for &'a T
+impl<'a, T> Render for &'a T
 where
-    T: RenderOutput,
+    T: Render,
 {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
         (*self).render_for_humans(fmt)

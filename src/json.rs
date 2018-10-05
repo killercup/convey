@@ -30,7 +30,7 @@ impl Formatter {
     }
 }
 
-/// Shorthand for writing the `render_json` method of the `RenderOutput`  trait
+/// Shorthand for writing the `render_json` method of the `Render`  trait
 ///
 /// # Examples
 ///
@@ -44,7 +44,7 @@ impl Formatter {
 ///     body: String,
 /// }
 ///
-/// impl output::RenderOutput for Message {
+/// impl output::Render for Message {
 ///     // Look at the `human` module if you care about those meat bags.
 ///     render_for_humans!(this -> []);
 ///

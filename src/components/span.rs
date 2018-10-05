@@ -1,5 +1,5 @@
 use termcolor::{ColorSpec, WriteColor};
-use {human, json, Error, RenderOutput};
+use {human, json, Error, Render};
 
 /// Construct a new, empty span
 pub fn span() -> Span {
@@ -54,13 +54,13 @@ macro_rules! span {
 
 #[derive(Default)]
 pub struct Span {
-    items: Vec<Box<RenderOutput>>,
+    items: Vec<Box<Render>>,
     fg: Option<::termcolor::Color>,
     bg: Option<::termcolor::Color>,
 }
 
 impl Span {
-    pub fn add_item<T: RenderOutput + 'static>(mut self, item: T) -> Self {
+    pub fn add_item<T: Render + 'static>(mut self, item: T) -> Self {
         self.items.push(Box::new(item));
         self
     }
@@ -76,7 +76,7 @@ impl Span {
     }
 }
 
-impl RenderOutput for Span {
+impl Render for Span {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
         fmt.writer
             .set_color(ColorSpec::new().set_fg(self.fg).set_bg(self.bg))?;

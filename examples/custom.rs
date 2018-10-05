@@ -21,9 +21,7 @@ fn main() -> Result<(), failure::Error> {
         message: String,
     }
 
-    use output::RenderOutput;
-
-    impl RenderOutput for ErrorMessage {
+    impl output::Render for ErrorMessage {
         render_for_humans!(this -> [
             span!(fg = "white", bg = "black", [text(this.code.to_string()), text(" "),]),
             span!(fg = "red", bg = "black", [text(&this.name),]),
