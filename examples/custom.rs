@@ -26,10 +26,10 @@ fn main() -> Result<(), failure::Error> {
     impl RenderOutput for ErrorMessage {
         render_for_humans!(this -> [
             span!(fg = "white", bg = "black", [text(this.code.to_string()), text(" "),]),
-            span!(fg = "red", bg = "black", [text(this.name.clone()),]),
+            span!(fg = "red", bg = "black", [text(&this.name),]),
             newline(),
             text("> "),
-            text(this.message.clone()),
+            text(&this.message),
         ]);
 
         render_json!();

@@ -1,9 +1,8 @@
 use std::io::Write;
 use {human, json, Error, RenderOutput};
-use std::borrow::Cow;
 
-pub fn text<T: Into<Cow<'static, str>>>(input: T) -> Text {
-    Text(input.into())
+pub fn text<T: AsRef<str>>(input: T) -> Text {
+    Text(input.as_ref().to_string())
 }
 
 pub fn newline() -> Text {
@@ -11,7 +10,7 @@ pub fn newline() -> Text {
 }
 
 #[derive(Clone, Serialize)]
-pub struct Text(Cow<'static, str>);
+pub struct Text(String);
 
 impl RenderOutput for Text {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
