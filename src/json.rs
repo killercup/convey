@@ -28,6 +28,7 @@ impl Formatter {
     /// Write a serializable item to the JSON formatter
     pub fn write<T: Serialize>(&mut self, item: &T) -> Result<(), Error> {
         write_json(&mut self.writer, item)?;
+        self.writer.write_all(b"\n")?;
         Ok(())
     }
 }
@@ -106,7 +107,7 @@ mod test_helper {
     ///
     ///     assert_eq!(
     ///         test_target.to_string(),
-    ///         "{\"author\":\"Pascal\",\"body\":\"Lorem ipsum dolor\"}\n",
+    ///         "{\"author\":\"Pascal\",\"body\":\"Lorem ipsum dolor\"}\n\n",
     ///     );
     ///     Ok(())
     /// }
