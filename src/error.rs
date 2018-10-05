@@ -1,11 +1,15 @@
 use std::io;
 
+/// Output's error type
 #[derive(Fail, Debug)]
 pub enum Error {
+    /// I/O Error
     #[fail(display = "IO error: {}", _0)]
     Io(io::Error),
+    /// Error parsing a color value
     #[fail(display = "{}", _0)]
     ParseColorError(termcolor::ParseColorError),
+    /// Error dealing with JSON
     #[fail(display = "{}", _0)]
     Json(serde_json::Error),
 }

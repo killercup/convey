@@ -5,7 +5,7 @@ extern crate output;
 extern crate serde_derive;
 
 use output::{
-    components::{span, text, newline},
+    components::{newline, text},
     human, json,
 };
 

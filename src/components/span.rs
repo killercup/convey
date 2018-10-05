@@ -1,8 +1,55 @@
 use termcolor::{ColorSpec, WriteColor};
 use {human, json, Error, RenderOutput};
 
+/// Construct a new, empty span
 pub fn span() -> Span {
     Span::default()
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __inner_span {
+    ($span:ident, $attr:ident = $val:expr, $($token:tt)*) => {
+        $span = $span.$attr($val)?;
+        __inner_span!($span, $($token)*);
+    };
+    ($span:ident, [$($item:expr,)*]) => {
+        $(
+            $span = $span.add_item($item);
+        )*
+    };
+    ($span:ident, []) => { };
+}
+
+/// Quickly write a span
+///
+/// # Examples
+///
+/// ```rust
+/// #[macro_use] extern crate output;
+///
+/// fn main() -> Result<(), output::Error> {
+///     use output::{components::text, human};
+///
+///     let mut out = output::new().add_target(human::stdout()?);
+///
+///     let message = span!(fg = "red", [
+///         text("hello"),
+///     ]);
+///
+///     out.print(message)?;
+///     Ok(())
+/// }
+/// ```
+#[macro_export]
+macro_rules! span {
+    ($($token:tt)*) => {
+        {
+            let mut the_span = $crate::components::span();
+            __inner_span!(the_span, $($token)*);
+            the_span
+        }
+    };
 }
 
 #[derive(Default)]

@@ -1,10 +1,14 @@
 use std::io::Write;
 use {human, json, Error, RenderOutput};
 
+/// Render some text
 pub fn text<T: AsRef<str>>(input: T) -> Text {
     Text(input.as_ref().to_string())
 }
 
+/// Render a newline
+///
+/// This is just a shorthand for calling `text`.
 pub fn newline() -> Text {
     text("\n")
 }
