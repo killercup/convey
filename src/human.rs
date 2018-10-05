@@ -35,12 +35,12 @@ pub struct Formatter {
 ///
 /// impl Render for Message {
 ///     // because `self` is a keyword, we need to use something else
-///     render_for_humans!(this -> [
+///     render_for_humans!(self -> [
 ///         // compose output components
 ///         text("Important notice from "),
 ///         // refer to struct fields using the name you specified above
-///         text(&this.author), newline(),
-///         text("> "), text(&this.body),
+///         text(&self.author), newline(),
+///         text("> "), text(&self.body),
 ///     ]);
 ///
 ///     // see `json` module
@@ -60,9 +60,8 @@ macro_rules! render_for_humans {
             Ok(())
         }
     };
-    ($this:ident -> [$($item:expr,)*]) => {
-        fn render_for_humans(&self, fmt: &mut $crate::human::Formatter) -> Result<(), $crate::Error> {
-            let $this = self;
+    ($self:ident -> [$($item:expr,)*]) => {
+        fn render_for_humans(&$self, fmt: &mut $crate::human::Formatter) -> Result<(), $crate::Error> {
             let span = span!([ $( $item, )* ]);
             span.render_for_humans(fmt)?;
             Ok(())

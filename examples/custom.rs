@@ -22,12 +22,12 @@ fn main() -> Result<(), failure::Error> {
     }
 
     impl output::Render for ErrorMessage {
-        render_for_humans!(this -> [
-            span!(fg = "white", bg = "black", [text(this.code.to_string()), text(" "),]),
-            span!(fg = "red", bg = "black", [text(&this.name),]),
+        render_for_humans!(self -> [
+            span!(fg = "white", bg = "black", [text(self.code.to_string()), text(" "),]),
+            span!(fg = "red", bg = "black", [text(&self.name),]),
             newline(),
             text("> "),
-            text(&this.message),
+            text(&self.message),
         ]);
 
         render_json!();
