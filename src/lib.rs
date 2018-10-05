@@ -21,6 +21,7 @@ extern crate serde;
 extern crate termcolor;
 #[macro_use]
 extern crate serde_derive;
+#[cfg_attr(test, macro_use)]
 extern crate serde_json;
 #[cfg(test)]
 #[macro_use]

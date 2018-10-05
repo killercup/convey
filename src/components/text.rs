@@ -31,15 +31,20 @@ impl Render for Text {
 #[cfg(test)]
 mod test {
     use super::text;
-    use {human, Render};
+    use {human, json, Render};
 
     proptest! {
         #[test]
         fn renders_text_exactly(s in "\\PC") {
             let item = text(&s);
-            let test_output = human::test();
-            item.render_for_humans(&mut test_output.formatter()).unwrap();
-            prop_assert_eq!(test_output.to_string(), s);
+
+            let human_output = human::test();
+            item.render_for_humans(&mut human_output.formatter()).unwrap();
+            prop_assert_eq!(&human_output.to_string(), &s);
+
+            let json = json::test();
+            item.render_json(&mut json.formatter()).unwrap();
+            prop_assert_eq!(json.to_string(), json!(s).to_string() + "\n");
         }
     }
 }
