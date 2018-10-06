@@ -8,11 +8,11 @@ use {Error, Target};
 
 /// Create a new JSON output that writes to a file
 pub fn file<T: AsRef<Path>>(name: T) -> Result<Target, Error> {
-    use std::fs::File;
+    use std::fs::{File, OpenOptions};
     use std::io::BufWriter;
 
     let target = if name.as_ref().exists() {
-        let mut f = File::open(name)?;
+        let mut f = OpenOptions::new().write(true).append(true).open(name)?;
         f.write_all(b"\n")?;
 
         f
