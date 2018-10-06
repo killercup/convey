@@ -125,3 +125,16 @@ pub mod human;
 pub mod json;
 
 mod test_buffer;
+
+#[cfg(test)]
+mod tests {
+    use human;
+
+    #[test]
+    fn test_print_str() {
+        let test_target = human::test();
+        let mut out = ::new().add_target(test_target.target());
+        out.print("Hello, World!").unwrap();
+        assert_eq!(test_target.to_string(), "Hello, World!\n")
+    }
+}
