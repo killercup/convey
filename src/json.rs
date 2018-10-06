@@ -8,9 +8,23 @@ use {Error, Target};
 
 /// Create a new JSON output that writes to a file
 pub fn file<T: AsRef<Path>>(name: T) -> Result<Target, Error> {
-    use std::fs::OpenOptions;
-    use std::io::BufWriter;
-    let t = BufWriter::new(OpenOptions::new().create(true).append(true).open(name)?);
+    use std::fs::File;
+    use std::io::{Read, BufWriter};
+
+    let writer = if name.as_ref().exists() {
+        let mut out = File::open(name)?;
+        let mut buf = String::new();
+        out.read_to_string(&mut buf)?;
+        if *buf.as_bytes().last().unwrap_or(&b'x') != b'\n' {
+            out.write_all(&[b'\n'])?;
+        }
+
+        out
+    }else {
+        File::create(name)?
+    };
+
+    let t = BufWriter::new(writer);
 
     Ok(Target::Json(Formatter {
         writer: Box::new(t),
