@@ -8,9 +8,9 @@ use {Error, Target};
 
 /// Create a new JSON output that writes to a file
 pub fn file<T: AsRef<Path>>(name: T) -> Result<Target, Error> {
-    use std::fs::File;
+    use std::fs::OpenOptions;
     use std::io::BufWriter;
-    let t = BufWriter::new(File::create(name)?);
+    let t = BufWriter::new(OpenOptions::new().create(true).append(true).open(name)?);
 
     Ok(Target::Json(Formatter {
         writer: Box::new(t),
