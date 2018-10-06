@@ -108,6 +108,18 @@ where
     }
 }
 
+impl<'a> Render for &'a str {
+    fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
+        fmt.writer.write_all(self.as_bytes())?;
+        Ok(())
+    }
+
+    fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), Error> {
+        fmt.write(&self)?;
+        Ok(())
+    }
+}
+
 pub mod components;
 pub mod human;
 pub mod json;
