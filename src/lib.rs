@@ -108,8 +108,33 @@ where
     }
 }
 
+impl<'a> Render for &'a str {
+    fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
+        fmt.writer.write_all(self.as_bytes())?;
+        Ok(())
+    }
+
+    fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), Error> {
+        fmt.write(&self)?;
+        Ok(())
+    }
+}
+
 pub mod components;
 pub mod human;
 pub mod json;
 
 mod test_buffer;
+
+#[cfg(test)]
+mod tests {
+    use human;
+
+    #[test]
+    fn test_print_str() {
+        let test_target = human::test();
+        let mut out = ::new().add_target(test_target.target());
+        out.print("Hello, World!").unwrap();
+        assert_eq!(test_target.to_string(), "Hello, World!\n")
+    }
+}
