@@ -2,6 +2,10 @@
 name = "output"
 version = "0.1.0"
 authors = ["Pascal Hertleif <killercup@gmail.com>"]
+description = "A Rust create for outputting information and log messages for humans and machines"
+license = "Apache-2.0 OR MIT"
+readme = "README.md"
+repository = "https://github.com/killercup/output-rs"
 
 [dependencies]
 termcolor = "1.0.4"
