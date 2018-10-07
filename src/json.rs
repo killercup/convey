@@ -150,3 +150,96 @@ mod test_helper {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use assert_fs::*;
+    use json;
+    use predicates::prelude::*;
+
+    type Res = Result<(), ::failure::Error>;
+
+    #[test]
+    fn creates_a_new_file() -> Res {
+        let dir = TempDir::new()?;
+        let log_file = dir.child("log.json");
+        log_file.assert(predicate::path::missing());
+
+        {
+            // drop to flush file write buffer
+            let _target = json::file(log_file.path())?;
+        }
+
+        log_file.assert(predicate::path::exists());
+
+        Ok(())
+    }
+
+    #[test]
+    fn doesnt_truncate_existing_file() -> Res {
+        let dir = TempDir::new()?;
+        let log_file = dir.child("log.json");
+        let intitial_content = "{\"success\":true}\n";
+
+        log_file.write_str(intitial_content)?;
+        log_file.assert(predicate::path::exists());
+
+        {
+            // drop to flush file write buffer
+            let _target = json::file(log_file.path())?;
+        }
+
+        log_file.assert(
+            predicate::str::contains(intitial_content)
+                .from_utf8()
+                .from_file_path(),
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn appends_to_existing_file() -> Res {
+        let dir = TempDir::new()?;
+        let log_file = dir.child("log.json");
+        let intitial_content = "{\"success\":true}\n";
+
+        log_file.write_str(intitial_content)?;
+        log_file.assert(predicate::path::exists());
+
+        {
+            // drop to flush file write buffer
+            let target = json::file(log_file.path())?;
+            let mut output = ::new().add_target(target);
+            output.print("wtf")?;
+        }
+
+        log_file.assert(
+            predicate::str::ends_with("\"wtf\"")
+                .trim()
+                .from_utf8()
+                .from_file_path(),
+        );
+
+        Ok(())
+    }
+
+    #[test]
+    fn appends_newline_to_existing_file() -> Res {
+        let dir = TempDir::new()?;
+        let log_file = dir.child("log.json");
+        let intitial_content = "{\"success\":true}"; // <- no newline at the end
+
+        log_file.write_str(intitial_content)?;
+        log_file.assert(predicate::path::exists());
+
+        {
+            // drop to flush file write buffer
+            let _target = json::file(log_file.path())?;
+        }
+
+        log_file.assert(predicate::str::ends_with("\n").from_utf8().from_file_path());
+
+        Ok(())
+    }
+}

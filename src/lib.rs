@@ -26,6 +26,10 @@ extern crate serde_json;
 #[cfg(test)]
 #[macro_use]
 extern crate proptest;
+#[cfg(test)]
+extern crate assert_fs;
+#[cfg(test)]
+extern crate predicates;
 
 use std::io::Write;
 
