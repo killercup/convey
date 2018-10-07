@@ -7,6 +7,11 @@ license = "Apache-2.0 OR MIT"
 readme = "README.md"
 repository = "https://github.com/killercup/output-rs"
 
+[workspace]
+members = [
+    "output_derive"
+]
+
 [dependencies]
 termcolor = "1.0.4"
 serde = "1.0.79"
