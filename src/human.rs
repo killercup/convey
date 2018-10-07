@@ -1,14 +1,14 @@
 //! Human output
 
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use termcolor::{ColorChoice, ColorSpec, StandardStream, WriteColor};
 use {Error, Target};
 
 /// Construct a new human output target that writes to stdout
 pub fn stdout() -> Result<Target, Error> {
-    Ok(Target::Human(Formatter::init_with(|| {
-        Ok(StandardStream::stdout(ColorChoice::Auto))
-    })?))
+    Ok(Target::Human(Arc::new(Mutex::new(Formatter::init_with(
+        || Ok(StandardStream::stdout(ColorChoice::Auto)),
+    )?))))
 }
 
 pub use self::test_helper::{test, test_with_color};
@@ -216,6 +216,7 @@ macro_rules! render_for_humans {
 
 mod test_helper {
     use super::Formatter;
+    use std::sync::{Arc, Mutex};
     use termcolor::Buffer;
     use {test_buffer::TestBuffer, Target};
 
@@ -268,7 +269,7 @@ mod test_helper {
         }
 
         pub fn target(&self) -> Target {
-            Target::Human(self.formatter())
+            Target::Human(Arc::new(Mutex::new(self.formatter())))
         }
 
         pub fn to_string(&self) -> String {

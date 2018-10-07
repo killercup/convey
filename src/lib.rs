@@ -38,7 +38,7 @@ pub fn new() -> Output {
 }
 
 /// Structure holding your output targets
-#[derive(Default)]
+#[derive(Default, Clone)]
 pub struct Output {
     targets: Vec<Target>,
 }
@@ -57,16 +57,19 @@ fn assert_output_is_sync_and_send() {
     assert_both::<Output>();
 }
 
+use std::sync::{Arc, Mutex};
+
 /// Known targets to write to
+#[derive(Clone)]
 pub enum Target {
     /// Human readable output
     ///
     /// Will mostly be (unstructured) text, optionally with formatting.
-    Human(human::Formatter),
+    Human(Arc<Mutex<human::Formatter>>),
     /// JSON output
     ///
     /// Machines like this.
-    Json(json::Formatter),
+    Json(Arc<Mutex<json::Formatter>>),
 }
 
 mod error;
@@ -78,11 +81,13 @@ impl Output {
         for target in &mut self.targets {
             match target {
                 Target::Human(fmt) => {
-                    item.render_for_humans(fmt)?;
+                    let mut fmt = fmt.lock().map_err(|_| Error::SyncError)?;
+                    item.render_for_humans(&mut *fmt)?;
                     fmt.write("\n")?;
                 }
                 Target::Json(fmt) => {
-                    item.render_json(fmt)?;
+                    let mut fmt = fmt.lock().map_err(|_| Error::SyncError)?;
+                    item.render_json(&mut *fmt)?;
                     fmt.write_separator()?;
                 }
             }
@@ -96,9 +101,11 @@ impl Output {
         for target in &self.targets {
             match target {
                 Target::Human(fmt) => {
+                    let mut fmt = fmt.lock().map_err(|_| Error::SyncError)?;
                     fmt.flush()?;
                 }
                 Target::Json(fmt) => {
+                    let mut fmt = fmt.lock().map_err(|_| Error::SyncError)?;
                     fmt.flush()?;
                 }
             }
@@ -165,6 +172,33 @@ where
 /// # Ok(()) }
 /// ```
 impl<'a> Render for &'a str {
+    fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
+        fmt.write(self.as_bytes())?;
+        Ok(())
+    }
+
+    fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), Error> {
+        fmt.write(&self)?;
+        Ok(())
+    }
+}
+
+/// Render a string
+///
+/// # Examples
+///
+/// ```rust
+/// # extern crate output;
+/// # use output::human;
+/// # fn main() -> Result<(), output::Error> {
+/// # let test_target = human::test();
+/// let mut out = output::new().add_target(test_target.target());
+/// out.print(String::from("Hello, World!"))?;
+/// # out.flush()?;
+/// # assert_eq!(test_target.to_string(), "Hello, World!\n");
+/// # Ok(()) }
+/// ```
+impl<'a> Render for String {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
         fmt.write(self.as_bytes())?;
         Ok(())

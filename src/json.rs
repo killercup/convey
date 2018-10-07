@@ -4,32 +4,35 @@ use serde::Serialize;
 use serde_json::to_vec as write_json;
 use std::io::Write;
 use std::path::Path;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex};
 use {Error, Target};
 
 /// Create a new JSON output that writes to a file
 pub fn file<T: AsRef<Path>>(name: T) -> Result<Target, Error> {
     let path = name.as_ref().to_path_buf();
-    Ok(Target::Json(Formatter::init_with(move || {
-        use std::fs::{File, OpenOptions};
-        use std::io::BufWriter;
+    Ok(Target::Json(Arc::new(Mutex::new(Formatter::init_with(
+        move || {
+            use std::fs::{File, OpenOptions};
+            use std::io::BufWriter;
 
-        let target = if path.exists() {
-            let mut f = OpenOptions::new().write(true).append(true).open(&path)?;
-            f.write_all(b"\n")?;
+            let target = if path.exists() {
+                let mut f = OpenOptions::new().write(true).append(true).open(&path)?;
+                f.write_all(b"\n")?;
 
-            f
-        } else {
-            File::create(&path)?
-        };
+                f
+            } else {
+                File::create(&path)?
+            };
 
-        Ok(BufWriter::new(target))
-    })?))
+            Ok(BufWriter::new(target))
+        },
+    )?))))
 }
 
 pub use self::test_helper::test;
 
 /// JSON formatter
+#[derive(Clone)]
 pub struct Formatter {
     inner: Arc<InternalFormatter>,
 }
@@ -45,9 +48,7 @@ impl Formatter {
 
     /// Write a serializable item to the JSON formatter
     pub fn write<T: Serialize>(&self, item: &T) -> Result<(), Error> {
-        let mut bytes = write_json(item)?;
-        bytes.push(b'\n');
-        self.send(Message::Write(bytes));
+        self.send(Message::Write(write_json(item)?));
         Ok(())
     }
 
@@ -206,6 +207,7 @@ macro_rules! render_json {
 
 mod test_helper {
     use super::Formatter;
+    use std::sync::{Arc, Mutex};
     use termcolor::Buffer;
     use test_buffer::TestBuffer;
     use Target;
@@ -262,7 +264,7 @@ mod test_helper {
         }
 
         pub fn target(&self) -> Target {
-            Target::Json(self.formatter())
+            Target::Json(Arc::new(Mutex::new(self.formatter())))
         }
 
         pub fn to_string(&self) -> String {
