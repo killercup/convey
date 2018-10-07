@@ -158,27 +158,3 @@ pub mod human;
 pub mod json;
 
 mod test_buffer;
-
-#[cfg(test)]
-mod tests {
-    use components::span;
-    use human;
-
-    #[test]
-    fn test_colored_output() {
-        let test_target = human::test_with_color();
-        let mut out = ::new().add_target(test_target.target());
-        out.print(
-            span()
-                .add_item("hello")
-                .fg("green")
-                .unwrap()
-                .bg("blue")
-                .unwrap(),
-        ).unwrap();
-        assert_eq!(
-            test_target.to_string(),
-            "\u{1b}[0m\u{1b}[32m\u{1b}[44mhello\u{1b}[0m\n"
-        )
-    }
-}
