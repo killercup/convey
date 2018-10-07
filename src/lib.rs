@@ -99,6 +99,21 @@ pub trait Render {
     fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), Error>;
 }
 
+/// Render automatically works with references
+///
+/// # Examples
+///
+/// ```rust
+/// # extern crate output;
+/// # use output::{human, components::text};
+/// # fn main() -> Result<(), output::Error> {
+/// # let test_target = human::test();
+/// let mut out = output::new().add_target(test_target.target());
+/// out.print(text("owned element"))?;
+/// out.print(&text("reference to an element"))?;
+/// # assert_eq!(test_target.to_string(), "owned element\nreference to an element\n");
+/// # Ok(()) }
+/// ```
 impl<'a, T> Render for &'a T
 where
     T: Render,
@@ -112,6 +127,20 @@ where
     }
 }
 
+/// Render a string slice
+///
+/// # Examples
+///
+/// ```rust
+/// # extern crate output;
+/// # use output::human;
+/// # fn main() -> Result<(), output::Error> {
+/// # let test_target = human::test();
+/// let mut out = output::new().add_target(test_target.target());
+/// out.print("Hello, World!")?;
+/// # assert_eq!(test_target.to_string(), "Hello, World!\n");
+/// # Ok(()) }
+/// ```
 impl<'a> Render for &'a str {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
         fmt.writer.write_all(self.as_bytes())?;
@@ -134,14 +163,6 @@ mod test_buffer;
 mod tests {
     use components::span;
     use human;
-
-    #[test]
-    fn test_print_str() {
-        let test_target = human::test();
-        let mut out = ::new().add_target(test_target.target());
-        out.print("Hello, World!").unwrap();
-        assert_eq!(test_target.to_string(), "Hello, World!\n")
-    }
 
     #[test]
     fn test_colored_output() {
