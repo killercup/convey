@@ -9,7 +9,6 @@ extern crate syn;
 extern crate output;
 
 use self::proc_macro::TokenStream;
-use output::{human, json, Render};
 use syn::DeriveInput;
 
 #[proc_macro_derive(RenderOutput)]
@@ -18,6 +17,7 @@ pub fn render_output(input: TokenStream) -> TokenStream {
 
     let name = &ast.ident;
     let exp = quote! {
+        use output::{human, json, Render};
         impl Render for #name {
             fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
                 unimplemented!()
