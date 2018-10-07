@@ -33,7 +33,7 @@ pub fn render_output(input: TokenStream) -> TokenStream {
                 .collect(),
             _ => panic!("Unit structs not supported for now, sorry."),
         },
-        _ => panic!("Only structs not supported for now, sorry."),
+        _ => panic!("Only structs supported for now, sorry."),
     };
     let names = fields.iter().map(|(name, _)| name);
     let fields = fields.iter().map(|(_, ident)| ident);
