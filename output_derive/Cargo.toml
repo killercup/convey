@@ -7,7 +7,6 @@ authors = ["Katharina Fey <kookie@spacekookie.de>"]
 proc-macro = true
 
 [dependencies]
-output = { path = ".." }
 syn = "0.15"
 quote = "0.6"
 proc-macro2 = "0.4"
