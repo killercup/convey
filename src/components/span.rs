@@ -118,5 +118,23 @@ mod test {
         assert_eq!(json.to_string(), "\"one\"\n\"two\"\n\"three\"\n");
     }
 
+    #[test]
+    fn test_colored_output() {
+        let test_target = human::test_with_color();
+        let mut out = ::new().add_target(test_target.target());
+        out.print(
+            span()
+                .add_item("hello")
+                .fg("green")
+                .unwrap()
+                .bg("blue")
+                .unwrap(),
+        ).unwrap();
+        assert_eq!(
+            test_target.to_string(),
+            "\u{1b}[0m\u{1b}[32m\u{1b}[44mhello\u{1b}[0m\n"
+        )
+    }
+
     // TODO: Add proptest tests
 }

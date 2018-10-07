@@ -26,6 +26,10 @@ extern crate serde_json;
 #[cfg(test)]
 #[macro_use]
 extern crate proptest;
+#[cfg(test)]
+extern crate assert_fs;
+#[cfg(test)]
+extern crate predicates;
 
 use std::io::Write;
 
@@ -95,6 +99,21 @@ pub trait Render {
     fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), Error>;
 }
 
+/// Render automatically works with references
+///
+/// # Examples
+///
+/// ```rust
+/// # extern crate output;
+/// # use output::{human, components::text};
+/// # fn main() -> Result<(), output::Error> {
+/// # let test_target = human::test();
+/// let mut out = output::new().add_target(test_target.target());
+/// out.print(text("owned element"))?;
+/// out.print(&text("reference to an element"))?;
+/// # assert_eq!(test_target.to_string(), "owned element\nreference to an element\n");
+/// # Ok(()) }
+/// ```
 impl<'a, T> Render for &'a T
 where
     T: Render,
@@ -108,6 +127,20 @@ where
     }
 }
 
+/// Render a string slice
+///
+/// # Examples
+///
+/// ```rust
+/// # extern crate output;
+/// # use output::human;
+/// # fn main() -> Result<(), output::Error> {
+/// # let test_target = human::test();
+/// let mut out = output::new().add_target(test_target.target());
+/// out.print("Hello, World!")?;
+/// # assert_eq!(test_target.to_string(), "Hello, World!\n");
+/// # Ok(()) }
+/// ```
 impl<'a> Render for &'a str {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
         fmt.writer.write_all(self.as_bytes())?;
@@ -125,35 +158,3 @@ pub mod human;
 pub mod json;
 
 mod test_buffer;
-
-#[cfg(test)]
-mod tests {
-    use components::span;
-    use human;
-
-    #[test]
-    fn test_print_str() {
-        let test_target = human::test();
-        let mut out = ::new().add_target(test_target.target());
-        out.print("Hello, World!").unwrap();
-        assert_eq!(test_target.to_string(), "Hello, World!\n")
-    }
-
-    #[test]
-    fn test_colored_output() {
-        let test_target = human::test_with_color();
-        let mut out = ::new().add_target(test_target.target());
-        out.print(
-            span()
-                .add_item("hello")
-                .fg("green")
-                .unwrap()
-                .bg("blue")
-                .unwrap(),
-        ).unwrap();
-        assert_eq!(
-            test_target.to_string(),
-            "\u{1b}[0m\u{1b}[32m\u{1b}[44mhello\u{1b}[0m\n"
-        )
-    }
-}
