@@ -112,8 +112,12 @@ impl Render for Span {
     }
 
     fn render_json(&self, fmt: &mut json::Formatter) -> Result<(), Error> {
-        for item in &self.items {
-            item.render_json(fmt)?;
+        let len = self.items.len();
+        for i in 0..len {
+            self.items[i].render_json(fmt)?;
+            if i < len - 1 {
+                fmt.write_separator()?;
+            }
         }
         Ok(())
     }
@@ -138,7 +142,7 @@ mod test {
 
         let json = json::test();
         item.render_json(&mut json.formatter())?;
-        assert_eq!(json.to_string(), "\"one\"\n\"two\"\n\"three\"\n");
+        assert_eq!(json.to_string(), "\"one\"\n\"two\"\n\"three\"");
         Ok(())
     }
 

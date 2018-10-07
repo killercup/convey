@@ -242,7 +242,7 @@ mod test_helper {
     ///
     ///     assert_eq!(
     ///         test_target.to_string(),
-    ///         "{\"author\":\"Pascal\",\"body\":\"Lorem ipsum dolor\"}\n\n",
+    ///         "{\"author\":\"Pascal\",\"body\":\"Lorem ipsum dolor\"}\n",
     ///     );
     ///     Ok(())
     /// }
