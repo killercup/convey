@@ -10,3 +10,8 @@ proc-macro = true
 syn = "0.15"
 quote = "0.6"
 proc-macro2 = "0.4"
+
+[dev-dependencies]
+output = { version = "0.1", path = ".." }
+serde = "1.0.79"
+serde_derive = "1.0.79"
