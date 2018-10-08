@@ -1,4 +1,4 @@
-# Contributing Guide
+# Contributing guide
 
 Thanks for your interest in contributing to this project!
 We very much look forward to
@@ -11,7 +11,7 @@ This project and everyone participating in it is governed by
 [this Code of Conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
 
-# Submitting Bug Reports
+# Submitting bug reports
 
 Open an issue in which you:
 
@@ -19,7 +19,7 @@ Open an issue in which you:
 - Explain what you are trying to do
 - Try to provide a small, reproducible example of the issue.
 
-# Submitting Feature Requests
+# Submitting feature requests
 
 First,
 please check the exising (open and closed) issues
@@ -38,7 +38,7 @@ provide a list of criteria
 that needs to be met by a future version of this library
 so you can use this feature.
 
-# Submitting a Pull Request
+# Submitting a pull request
 
 Do you want to submit a quick typo fix or something similar?
 No need to read further, just send a PR!
@@ -64,7 +64,7 @@ Please nevertheless try to include something like
 (where `#42` is the issue this feature is described in)
 in your PR description and/or commit messages.
 
-## Required Setup
+## Required setup
 
 To work on this project, you'll need
 
@@ -72,13 +72,13 @@ To work on this project, you'll need
   If this is the first Rust project you contribute to,
   we recommend you read some of the [freely available documentation][rust-docs] first.
 - A recent Rust compiler and working cargo
-  - Also see the section on Code Style and CI for additional tools
+  - Also see the section on code style and CI for additional tools
 - A Github account and working knowledge of git
 - Basic communication skills in English
 
 [rust-docs]: https://doc.rust-lang.org/
 
-## Code Style
+## Code style
 
 Every PR is checked by a continuous integration system, which
 compiles the code (`cargo build`),
