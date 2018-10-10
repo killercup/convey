@@ -15,7 +15,15 @@ fn main() -> Result<(), failure::Error> {
 
     out.print(&text(x.to_string()))?;
 
-    out.print(&span().fg("blue")?.bg("yellow")?.add_item(text("hello")))?;
+    out.print(
+        &span()
+            .fg("blue")?
+            .bg("yellow")?
+            .underline(true)
+            .bold(true)
+            .intense(true)
+            .add_item(text("hello")),
+    )?;
 
     Ok(())
 }

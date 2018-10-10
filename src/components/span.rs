@@ -57,6 +57,9 @@ pub struct Span {
     items: Vec<Box<Render>>,
     fg: Option<::termcolor::Color>,
     bg: Option<::termcolor::Color>,
+    bold: bool,
+    underline: bool,
+    intense: bool,
 }
 
 impl Span {
@@ -74,12 +77,32 @@ impl Span {
         self.bg = Some(color.parse()?);
         Ok(self)
     }
+
+    pub fn bold(mut self, yes: bool) -> Self {
+        self.bold = yes;
+        self
+    }
+
+    pub fn underline(mut self, yes: bool) -> Self {
+        self.underline = yes;
+        self
+    }
+
+    pub fn intense(mut self, yes: bool) -> Self {
+        self.intense = yes;
+        self
+    }
 }
 
 impl Render for Span {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
-        fmt.writer
-            .set_color(ColorSpec::new().set_fg(self.fg).set_bg(self.bg))?;
+        fmt.writer.set_color(
+            ColorSpec::new()
+                .set_fg(self.fg)
+                .set_bg(self.bg)
+                .set_bold(self.bold)
+                .set_underline(self.underline),
+        )?;
         for item in &self.items {
             item.render_for_humans(fmt)?;
         }
@@ -129,10 +152,41 @@ mod test {
                 .unwrap()
                 .bg("blue")
                 .unwrap(),
-        ).unwrap();
+        )
+        .unwrap();
         assert_eq!(
             test_target.to_string(),
             "\u{1b}[0m\u{1b}[32m\u{1b}[44mhello\u{1b}[0m\n"
+        )
+    }
+
+    #[test]
+    fn test_bold_output() {
+        let test_target = human::test_with_color();
+        let mut out = ::new().add_target(test_target.target());
+        out.print(span().add_item("hello").bold(true)).unwrap();
+        assert_eq!(
+            test_target.to_string(),
+            "\u{1b}[0m\u{1b}[1mhello\u{1b}[0m\n"
+        )
+    }
+
+    #[test]
+    fn test_intense_output() {
+        let test_target = human::test_with_color();
+        let mut out = ::new().add_target(test_target.target());
+        out.print(span().add_item("hello").intense(true)).unwrap();
+        assert_eq!(test_target.to_string(), "\u{1b}[0mhello\u{1b}[0m\n")
+    }
+
+    #[test]
+    fn test_underline_output() {
+        let test_target = human::test_with_color();
+        let mut out = ::new().add_target(test_target.target());
+        out.print(span().add_item("hello").underline(true)).unwrap();
+        assert_eq!(
+            test_target.to_string(),
+            "\u{1b}[0m\u{1b}[4mhello\u{1b}[0m\n"
         )
     }
 
