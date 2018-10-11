@@ -57,6 +57,9 @@ pub struct Span {
     items: Vec<Box<Render>>,
     fg: Option<::termcolor::Color>,
     bg: Option<::termcolor::Color>,
+    bold: bool,
+    underline: bool,
+    intense: bool,
 }
 
 impl Span {
@@ -74,12 +77,33 @@ impl Span {
         self.bg = Some(color.parse()?);
         Ok(self)
     }
+
+    pub fn bold(mut self, yes: bool) -> Result<Self, Error> {
+        self.bold = yes;
+        Ok(self)
+    }
+
+    pub fn underline(mut self, yes: bool) -> Result<Self, Error> {
+        self.underline = yes;
+        Ok(self)
+    }
+
+    pub fn intense(mut self, yes: bool) -> Result<Self, Error> {
+        self.intense = yes;
+        Ok(self)
+    }
 }
 
 impl Render for Span {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
-        fmt.writer
-            .set_color(ColorSpec::new().set_fg(self.fg).set_bg(self.bg))?;
+        fmt.writer.set_color(
+            ColorSpec::new()
+                .set_fg(self.fg)
+                .set_bg(self.bg)
+                .set_bold(self.bold)
+                .set_underline(self.underline)
+                .set_intense(self.intense),
+        )?;
         for item in &self.items {
             item.render_for_humans(fmt)?;
         }
@@ -99,41 +123,71 @@ impl Render for Span {
 mod test {
     use super::span;
     use components::text;
-    use {human, json, Render};
+    use {human, json, Error, Render};
 
     #[test]
-    fn renders_span_children() {
+    fn renders_span_children() -> Result<(), Error> {
         let item = span()
             .add_item(text("one"))
             .add_item(text("two"))
             .add_item(span().add_item(text("three")));
 
         let human_output = human::test();
-        item.render_for_humans(&mut human_output.formatter())
-            .unwrap();
+        item.render_for_humans(&mut human_output.formatter())?;
         assert_eq!(&human_output.to_string(), "onetwothree");
 
         let json = json::test();
-        item.render_json(&mut json.formatter()).unwrap();
+        item.render_json(&mut json.formatter())?;
         assert_eq!(json.to_string(), "\"one\"\n\"two\"\n\"three\"\n");
+        Ok(())
     }
 
     #[test]
-    fn test_colored_output() {
+    fn test_colored_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
         let mut out = ::new().add_target(test_target.target());
-        out.print(
-            span()
-                .add_item("hello")
-                .fg("green")
-                .unwrap()
-                .bg("blue")
-                .unwrap(),
-        ).unwrap();
+        out.print(span().add_item("hello").fg("green")?.bg("blue")?)?;
         assert_eq!(
             test_target.to_string(),
             "\u{1b}[0m\u{1b}[32m\u{1b}[44mhello\u{1b}[0m\n"
-        )
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_bold_output() -> Result<(), Error> {
+        let test_target = human::test_with_color();
+        let mut out = ::new().add_target(test_target.target());
+        out.print(span().add_item("hello").bold(true)?)?;
+        assert_eq!(
+            test_target.to_string(),
+            "\u{1b}[0m\u{1b}[1mhello\u{1b}[0m\n"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_intense_output() -> Result<(), Error> {
+        let test_target = human::test_with_color();
+        let mut out = ::new().add_target(test_target.target());
+        out.print(span().add_item("hello").fg("green")?.intense(true)?)?;
+        assert_eq!(
+            test_target.to_string(),
+            "\u{1b}[0m\u{1b}[38;5;10mhello\u{1b}[0m\n"
+        );
+        Ok(())
+    }
+
+    #[test]
+    fn test_underline_output() -> Result<(), Error> {
+        let test_target = human::test_with_color();
+        let mut out = ::new().add_target(test_target.target());
+        out.print(span().add_item("hello").underline(true)?)?;
+        assert_eq!(
+            test_target.to_string(),
+            "\u{1b}[0m\u{1b}[4mhello\u{1b}[0m\n"
+        );
+        Ok(())
     }
 
     // TODO: Add proptest tests
