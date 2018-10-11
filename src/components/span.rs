@@ -78,19 +78,19 @@ impl Span {
         Ok(self)
     }
 
-    pub fn bold(mut self, yes: bool) -> Self {
+    pub fn bold(mut self, yes: bool) -> Result<Self, Error> {
         self.bold = yes;
-        self
+        Ok(self)
     }
 
-    pub fn underline(mut self, yes: bool) -> Self {
+    pub fn underline(mut self, yes: bool) -> Result<Self, Error> {
         self.underline = yes;
-        self
+        Ok(self)
     }
 
-    pub fn intense(mut self, yes: bool) -> Self {
+    pub fn intense(mut self, yes: bool) -> Result<Self, Error> {
         self.intense = yes;
-        self
+        Ok(self)
     }
 }
 
