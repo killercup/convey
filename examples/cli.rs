@@ -1,8 +1,9 @@
 extern crate failure;
+#[macro_use]
 extern crate output;
 
 use output::{
-    components::{span, text},
+    components::{newline, text},
     human, json,
 };
 
@@ -13,35 +14,16 @@ fn main() -> Result<(), failure::Error> {
 
     let x = 42;
 
-    out.print(&text(x.to_string()))?;
-
-    out.print(
-        &span()
-            .fg("blue")?
-            .bg("yellow")?
-            .underline(true)
-            .bold(true)
-            .intense(true)
-            .add_item(text("mixed style")),
-    )?;
-
-    out.print(
-        &span()
-            .intense(true)
-            .fg("green")?
-            .add_item(text("color with intense")),
-    )?;
-
-    out.print(
-        &span()
-            .intense(false)
-            .fg("green")?
-            .add_item(text("color without intense")),
-    )?;
-
-    out.print(&span().bold(true).add_item(text("bold")))?;
-
-    out.print(&span().underline(true).add_item(text("underline")))?;
+    out.print(text(x.to_string()))?;
+    out.print(span!([
+        span!(fg = "blue", bg = "yellow", ["colorful text",]),
+        newline(),
+        span!(bold = true, ["bold text",]),
+        newline(),
+        span!(underline = true, ["underlined text",]),
+        newline(),
+        span!(intense = true, ["intense text",]),
+    ]))?;
 
     Ok(())
 }
