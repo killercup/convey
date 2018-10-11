@@ -22,8 +22,26 @@ fn main() -> Result<(), failure::Error> {
             .underline(true)
             .bold(true)
             .intense(true)
-            .add_item(text("hello")),
+            .add_item(text("mixed style")),
     )?;
+
+    out.print(
+        &span()
+            .intense(true)
+            .fg("green")?
+            .add_item(text("color with intense")),
+    )?;
+
+    out.print(
+        &span()
+            .intense(false)
+            .fg("green")?
+            .add_item(text("color without intense")),
+    )?;
+
+    out.print(&span().bold(true).add_item(text("bold")))?;
+
+    out.print(&span().underline(true).add_item(text("underline")))?;
 
     Ok(())
 }
