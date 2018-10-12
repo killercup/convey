@@ -2,8 +2,9 @@
 name = "convey_derive"
 version = "0.1.0"
 authors = ["Katharina Fey <kookie@spacekookie.de>", "Pascal Hertleif <killercup@gmail.com>"]
-repository = "https://github.com/killercup/convey"
+description = "A Rust create for outputting information and log messages for humans and machines"
 license = "Apache-2.0 OR MIT"
+repository = "https://github.com/killercup/convey"
 
 [lib]
 proc-macro = true
