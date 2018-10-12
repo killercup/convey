@@ -171,7 +171,7 @@ enum Response {
 /// # Examples
 ///
 /// ```rust
-/// #[macro_use] extern crate output;
+/// #[macro_use] extern crate convey;
 /// #[macro_use] extern crate serde_derive;
 ///
 /// #[derive(Serialize)]
@@ -180,7 +180,7 @@ enum Response {
 ///     body: String,
 /// }
 ///
-/// impl output::Render for Message {
+/// impl convey::Render for Message {
 ///     // Look at the `human` module if you care about those meat bags.
 ///     render_for_humans!(this -> []);
 ///
@@ -188,8 +188,8 @@ enum Response {
 ///     render_json!();
 /// }
 ///
-/// fn main() -> Result<(), output::Error> {
-///     let mut out = output::new().add_target(output::human::stdout()?);
+/// fn main() -> Result<(), convey::Error> {
+///     let mut out = convey::new().add_target(convey::human::stdout()?);
 ///     out.print(Message { author: "Pascal".into(), body: "Lorem ipsum dolor".into() })?;
 ///     Ok(())
 /// }
@@ -220,19 +220,19 @@ mod test_helper {
     /// # Usage
     ///
     /// ```rust
-    /// #[macro_use] extern crate output;
+    /// #[macro_use] extern crate convey;
     /// #[macro_use] extern crate serde_derive;
     ///
-    /// fn main() -> Result<(), output::Error> {
-    ///     let test_target = output::json::test();
-    ///     let mut out = output::new().add_target(test_target.target());
+    /// fn main() -> Result<(), convey::Error> {
+    ///     let test_target = convey::json::test();
+    ///     let mut out = convey::new().add_target(test_target.target());
     ///
     ///     #[derive(Serialize)]
     ///     struct Message {
     ///         author: String,
     ///         body: String,
     ///     }
-    ///     impl output::Render for Message {
+    ///     impl convey::Render for Message {
     ///         render_for_humans!(this -> []);
     ///         render_json!();
     ///     }

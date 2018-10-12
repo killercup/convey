@@ -1,14 +1,14 @@
+extern crate convey;
 extern crate failure;
-extern crate output;
 #[macro_use]
-extern crate output_derive;
+extern crate convey_derive;
 #[macro_use]
 extern crate serde_derive;
 
-use output::{human, json};
+use convey::{human, json};
 
 fn main() -> Result<(), failure::Error> {
-    let mut out = output::new()
+    let mut out = convey::new()
         .add_target(json::file("target/foo.log")?)
         .add_target(human::stdout()?);
 

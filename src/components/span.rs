@@ -26,12 +26,12 @@ macro_rules! __inner_span {
 /// # Examples
 ///
 /// ```rust
-/// #[macro_use] extern crate output;
+/// #[macro_use] extern crate convey;
 ///
-/// fn main() -> Result<(), output::Error> {
-///     use output::{components::text, human};
+/// fn main() -> Result<(), convey::Error> {
+///     use convey::{components::text, human};
 ///
-///     let mut out = output::new().add_target(human::stdout()?);
+///     let mut out = convey::new().add_target(human::stdout()?);
 ///
 ///     let message = span!(fg = "red", [
 ///         text("hello"),

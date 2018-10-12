@@ -1,11 +1,11 @@
-extern crate output;
+extern crate convey;
 #[macro_use]
-extern crate output_derive;
+extern crate convey_derive;
 #[macro_use]
 extern crate serde_derive;
 
 #[test]
-fn struct_with_named_fields_of_primitive_types() -> Result<(), output::Error> {
+fn struct_with_named_fields_of_primitive_types() -> Result<(), convey::Error> {
     #[derive(Serialize, RenderOutput)]
     struct ErrorMessage {
         code: i32,
@@ -13,9 +13,9 @@ fn struct_with_named_fields_of_primitive_types() -> Result<(), output::Error> {
         message: String,
     }
 
-    let human = output::human::test();
-    let json = output::json::test();
-    let mut out = output::new()
+    let human = convey::human::test();
+    let json = convey::json::test();
+    let mut out = convey::new()
         .add_target(human.target())
         .add_target(json.target());
 
@@ -42,13 +42,13 @@ fn struct_with_named_fields_of_primitive_types() -> Result<(), output::Error> {
 }
 
 #[test]
-fn tuple_struct_of_primitive_types() -> Result<(), output::Error> {
+fn tuple_struct_of_primitive_types() -> Result<(), convey::Error> {
     #[derive(Serialize, RenderOutput)]
     struct ErrorMessage(i32, String);
 
-    let human = output::human::test();
-    let json = output::json::test();
-    let mut out = output::new()
+    let human = convey::human::test();
+    let json = convey::json::test();
+    let mut out = convey::new()
         .add_target(human.target())
         .add_target(json.target());
 

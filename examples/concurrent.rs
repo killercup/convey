@@ -1,8 +1,8 @@
+extern crate convey;
 extern crate failure;
-extern crate output;
 extern crate rand;
 
-use output::{human, json};
+use convey::{human, json};
 use rand::distributions::Distribution;
 use rand::distributions::Range;
 use rand::thread_rng;
@@ -10,7 +10,7 @@ use std::thread;
 use std::time::Duration;
 
 fn main() -> Result<(), failure::Error> {
-    let out = output::new()
+    let out = convey::new()
         .add_target(json::file("target/foo.log")?)
         .add_target(human::stdout()?);
 
