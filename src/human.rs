@@ -1,14 +1,13 @@
 //! Human output
 
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use termcolor::{ColorChoice, ColorSpec, StandardStream, WriteColor};
 use {Error, Target};
 
 /// Construct a new human output target that writes to stdout
 pub fn stdout() -> Result<Target, Error> {
-    Ok(Target::Human(Arc::new(Mutex::new(Formatter::init_with(
-        || Ok(StandardStream::stdout(ColorChoice::Auto)),
-    )?))))
+    let formatter = Formatter::init_with(|| Ok(StandardStream::stdout(ColorChoice::Auto)))?;
+    Ok(Target::human(formatter))
 }
 
 pub use self::test_helper::{test, test_with_color};
@@ -52,7 +51,7 @@ impl Formatter {
 
         match self.inner.receiver.recv() {
             Some(Response::Flushed) => Ok(()),
-            msg => Err(Error::WorkerError(format!("unexpected message {:?}", msg))),
+            msg => Err(Error::worker_error(format!("unexpected message {:?}", msg))),
         }
     }
 
@@ -131,7 +130,7 @@ impl InternalFormatter {
                 sender: message_sender,
                 receiver: response_receiver,
             }),
-            msg => Err(Error::WorkerError(format!("unexpected message {:?}", msg))),
+            msg => Err(Error::worker_error(format!("unexpected message {:?}", msg))),
         }
     }
 }
@@ -215,7 +214,6 @@ macro_rules! render_for_humans {
 
 mod test_helper {
     use super::Formatter;
-    use std::sync::{Arc, Mutex};
     use termcolor::Buffer;
     use {test_buffer::TestBuffer, Target};
 
@@ -268,7 +266,7 @@ mod test_helper {
         }
 
         pub fn target(&self) -> Target {
-            Target::Human(Arc::new(Mutex::new(self.formatter())))
+            Target::human(self.formatter())
         }
 
         pub fn to_string(&self) -> String {

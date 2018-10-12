@@ -61,14 +61,33 @@ use std::sync::{Arc, Mutex};
 
 /// Known targets to write to
 #[derive(Clone)]
-pub enum Target {
+pub struct Target {
+    inner: InnerTarget,
+}
+
+impl Target {
     /// Human readable output
     ///
     /// Will mostly be (unstructured) text, optionally with formatting.
-    Human(Arc<Mutex<human::Formatter>>),
+    pub(crate) fn human(f: human::Formatter) -> Self {
+        Target {
+            inner: InnerTarget::Human(Arc::new(Mutex::new(f))),
+        }
+    }
+
     /// JSON output
     ///
     /// Machines like this.
+    pub(crate) fn json(f: json::Formatter) -> Self {
+        Target {
+            inner: InnerTarget::Json(Arc::new(Mutex::new(f))),
+        }
+    }
+}
+
+#[derive(Clone)]
+enum InnerTarget {
+    Human(Arc<Mutex<human::Formatter>>),
     Json(Arc<Mutex<json::Formatter>>),
 }
 
@@ -79,14 +98,14 @@ impl Output {
     /// Print some item to the currently active output targets
     pub fn print<O: Render>(&mut self, item: O) -> Result<(), Error> {
         for target in &mut self.targets {
-            match target {
-                Target::Human(fmt) => {
-                    let mut fmt = fmt.lock().map_err(|_| Error::SyncError)?;
+            match &target.inner {
+                InnerTarget::Human(fmt) => {
+                    let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
                     item.render_for_humans(&mut *fmt)?;
                     fmt.write("\n")?;
                 }
-                Target::Json(fmt) => {
-                    let mut fmt = fmt.lock().map_err(|_| Error::SyncError)?;
+                InnerTarget::Json(fmt) => {
+                    let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
                     item.render_json(&mut *fmt)?;
                     fmt.write_separator()?;
                 }
@@ -99,13 +118,13 @@ impl Output {
     /// Immediately write all buffered output
     pub fn flush(&self) -> Result<(), Error> {
         for target in &self.targets {
-            match target {
-                Target::Human(fmt) => {
-                    let mut fmt = fmt.lock().map_err(|_| Error::SyncError)?;
+            match &target.inner {
+                InnerTarget::Human(fmt) => {
+                    let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
                     fmt.flush()?;
                 }
-                Target::Json(fmt) => {
-                    let mut fmt = fmt.lock().map_err(|_| Error::SyncError)?;
+                InnerTarget::Json(fmt) => {
+                    let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
                     fmt.flush()?;
                 }
             }
