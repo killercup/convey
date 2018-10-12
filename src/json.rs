@@ -1,46 +1,169 @@
 //! JSON output
 
 use serde::Serialize;
-use serde_json::to_writer as write_json;
+use serde_json::to_vec as write_json;
 use std::io::Write;
 use std::path::Path;
+use std::sync::{Arc, Mutex};
 use {Error, Target};
 
 /// Create a new JSON output that writes to a file
 pub fn file<T: AsRef<Path>>(name: T) -> Result<Target, Error> {
-    use std::fs::{File, OpenOptions};
-    use std::io::BufWriter;
+    let path = name.as_ref().to_path_buf();
+    Ok(Target::Json(Arc::new(Mutex::new(Formatter::init_with(
+        move || {
+            use std::fs::{File, OpenOptions};
+            use std::io::BufWriter;
 
-    let target = if name.as_ref().exists() {
-        let mut f = OpenOptions::new().write(true).append(true).open(name)?;
-        f.write_all(b"\n")?;
+            let target = if path.exists() {
+                let mut f = OpenOptions::new().write(true).append(true).open(&path)?;
+                f.write_all(b"\n")?;
 
-        f
-    } else {
-        File::create(name)?
-    };
+                f
+            } else {
+                File::create(&path)?
+            };
 
-    let t = BufWriter::new(target);
-
-    Ok(Target::Json(Formatter {
-        writer: Box::new(t),
-    }))
+            Ok(BufWriter::new(target))
+        },
+    )?))))
 }
 
 pub use self::test_helper::test;
 
 /// JSON formatter
+#[derive(Clone)]
 pub struct Formatter {
-    pub(crate) writer: Box<Write>,
+    inner: Arc<InternalFormatter>,
 }
 
 impl Formatter {
+    pub(crate) fn init_with<W: Write, F: FnOnce() -> Result<W, Error> + Send + 'static>(
+        init: F,
+    ) -> Result<Self, Error> {
+        Ok(Formatter {
+            inner: Arc::new(InternalFormatter::init_with(init)?),
+        })
+    }
+
     /// Write a serializable item to the JSON formatter
-    pub fn write<T: Serialize>(&mut self, item: &T) -> Result<(), Error> {
-        write_json(&mut self.writer, item)?;
-        self.writer.write_all(b"\n")?;
+    pub fn write<T: Serialize>(&self, item: &T) -> Result<(), Error> {
+        self.send(Message::Write(write_json(item)?));
         Ok(())
     }
+
+    /// Immediately write all buffered output
+    pub fn flush(&self) -> Result<(), Error> {
+        self.send(Message::Flush);
+
+        match self.inner.receiver.recv() {
+            Some(Response::Flushed) => Ok(()),
+            msg => Err(Error::WorkerError(format!("unexpected message {:?}", msg))),
+        }
+    }
+
+    /// Write a separator after a record
+    pub(crate) fn write_separator(&mut self) -> Result<(), Error> {
+        self.send(Message::Write(vec![b'\n']));
+        Ok(())
+    }
+
+    fn send(&self, msg: Message) {
+        self.inner.sender.send(msg);
+    }
+}
+
+use crossbeam_channel as channel;
+use std::thread;
+
+struct InternalFormatter {
+    sender: channel::Sender<Message>,
+    receiver: channel::Receiver<Response>,
+    // Only an option so we can `take` this in `Drop::drop`
+    worker: Option<thread::JoinHandle<()>>,
+}
+
+impl InternalFormatter {
+    pub(crate) fn init_with<W: Write, F: FnOnce() -> Result<W, Error> + Send + 'static>(
+        init: F,
+    ) -> Result<Self, Error> {
+        let (message_sender, message_receiver) = channel::unbounded();
+        let (response_sender, response_receiver) = channel::bounded(0);
+
+        let worker = thread::spawn(move || {
+            let mut buffer = match init() {
+                Ok(buf) => {
+                    response_sender.send(Response::StartedSuccessfully);
+                    buf
+                }
+                Err(e) => {
+                    response_sender.send(Response::Error(e));
+                    return;
+                }
+            };
+
+            macro_rules! maybe_log_error {
+                () => {
+                    |e| {
+                        if cfg!(debug_assertions) {
+                            eprintln!("{}", e)
+                        } else {
+                            ()
+                        }
+                    }
+                };
+            }
+
+            loop {
+                match message_receiver.recv() {
+                    Some(Message::Write(data)) => {
+                        let _ = buffer.write_all(&data).map_err(maybe_log_error!());
+                    }
+                    Some(Message::Flush) => {
+                        let _ = buffer.flush().map_err(maybe_log_error!());
+                        response_sender.send(Response::Flushed);
+                    }
+                    Some(Message::Exit) | None => {
+                        break;
+                    }
+                };
+            }
+        });
+
+        match response_receiver.recv() {
+            Some(Response::Error(error)) => Err(error),
+            Some(Response::StartedSuccessfully) => Ok(InternalFormatter {
+                worker: Some(worker),
+                sender: message_sender,
+                receiver: response_receiver,
+            }),
+            msg => Err(Error::WorkerError(format!("unexpected message {:?}", msg))),
+        }
+    }
+}
+
+impl Drop for InternalFormatter {
+    fn drop(&mut self) {
+        self.sender.send(Message::Exit);
+        // TODO: Docs say this may panic, so have a look at how to deal with that.
+        if let Some(worker) = self.worker.take() {
+            let _ = worker.join();
+        }
+    }
+}
+
+#[derive(Debug)]
+enum Message {
+    Write(Vec<u8>),
+    Flush,
+    Exit,
+}
+
+#[derive(Debug)]
+enum Response {
+    StartedSuccessfully,
+    Error(Error),
+    Flushed,
 }
 
 /// Shorthand for writing the `render_json` method of the `Render`  trait
@@ -84,6 +207,7 @@ macro_rules! render_json {
 
 mod test_helper {
     use super::Formatter;
+    use std::sync::{Arc, Mutex};
     use termcolor::Buffer;
     use test_buffer::TestBuffer;
     use Target;
@@ -114,10 +238,11 @@ mod test_helper {
     ///     }
     ///
     ///     out.print(Message { author: "Pascal".into(), body: "Lorem ipsum dolor".into() })?;
+    ///     out.flush()?;
     ///
     ///     assert_eq!(
     ///         test_target.to_string(),
-    ///         "{\"author\":\"Pascal\",\"body\":\"Lorem ipsum dolor\"}\n\n",
+    ///         "{\"author\":\"Pascal\",\"body\":\"Lorem ipsum dolor\"}\n",
     ///     );
     ///     Ok(())
     /// }
@@ -134,13 +259,12 @@ mod test_helper {
 
     impl TestTarget {
         pub fn formatter(&self) -> Formatter {
-            Formatter {
-                writer: Box::new(self.buffer.clone()),
-            }
+            let buffer = self.buffer.clone();
+            Formatter::init_with(|| Ok(buffer)).unwrap()
         }
 
         pub fn target(&self) -> Target {
-            Target::Json(self.formatter())
+            Target::Json(Arc::new(Mutex::new(self.formatter())))
         }
 
         pub fn to_string(&self) -> String {
@@ -207,12 +331,10 @@ mod tests {
         log_file.write_str(intitial_content)?;
         log_file.assert(predicate::path::exists());
 
-        {
-            // drop to flush file write buffer
-            let target = json::file(log_file.path())?;
-            let mut output = ::new().add_target(target);
-            output.print("wtf")?;
-        }
+        let target = json::file(log_file.path())?;
+        let mut output = ::new().add_target(target);
+        output.print("wtf")?;
+        output.flush()?;
 
         log_file.assert(
             predicate::str::ends_with("\"wtf\"")

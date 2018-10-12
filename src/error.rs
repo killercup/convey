@@ -14,6 +14,12 @@ pub enum Error {
     /// Error dealing with JSON
     #[fail(display = "{}", _0)]
     Json(JsonError),
+    /// Error in formatting worker
+    #[fail(display = "{}", _0)]
+    WorkerError(String),
+    /// Error syncing output
+    #[fail(display = "Error syncing output")]
+    SyncError,
 }
 
 impl From<io::Error> for Error {

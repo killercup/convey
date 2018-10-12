@@ -1,4 +1,3 @@
-use std::io::Write;
 use {human, json, Error, Render};
 
 /// Render some text
@@ -18,7 +17,7 @@ pub struct Text(String);
 
 impl Render for Text {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
-        fmt.writer.write_all(self.0.as_bytes())?;
+        fmt.write(self.0.as_bytes())?;
         Ok(())
     }
 
@@ -44,7 +43,7 @@ mod test {
 
             let json = json::test();
             item.render_json(&mut json.formatter()).unwrap();
-            prop_assert_eq!(json.to_string(), json!(s).to_string() + "\n");
+            prop_assert_eq!(json.to_string(), json!(s).to_string());
         }
     }
 }
