@@ -1,4 +1,29 @@
 //! Custom derives for `output.rs`
+//!
+//! # Examples
+//!
+//! ```rust
+//! extern crate output;
+//! #[macro_use] extern crate output_derive;
+//! #[macro_use] extern crate serde_derive;
+//!
+//! #[derive(Serialize, RenderOutput)]
+//! struct Message {
+//!     code: i32,
+//!     message: String,
+//! }
+//!
+//! # fn main() -> Result<(), output::Error> {
+//! # use output::human;
+//! # let test_target = human::test();
+//! let mut out = output::new().add_target(test_target.target());
+//! out.print(&Message {
+//!     code: 42,
+//!     message: String::from("Derive works"),
+//! })?;
+//! # assert_eq!(test_target.to_string(), "code: 42\nmessage: Derive works\n\n");
+//! # Ok(()) }
+//! ```
 
 #![recursion_limit = "1024"]
 
