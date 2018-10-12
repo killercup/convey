@@ -162,7 +162,7 @@ enum Response {
     Flushed,
 }
 
-/// Shorthand for writing the `render_for_humans` method of the `Render`  trait
+/// Shorthand for writing the `render_for_humans` method of the `Render` trait
 ///
 /// # Examples
 ///
@@ -179,11 +179,10 @@ enum Response {
 /// }
 ///
 /// impl Render for Message {
-///     // because `self` is a keyword, we need to use something else
+///     // we need to explicitly pass `self` here, similar to regular methods
 ///     render_for_humans!(self -> [
 ///         // compose output components
 ///         text("Important notice from "),
-///         // refer to struct fields using the name you specified above
 ///         text(&self.author), newline(),
 ///         text("> "), text(&self.body),
 ///     ]);
