@@ -17,6 +17,7 @@
 extern crate failure;
 #[macro_use]
 extern crate failure_derive;
+extern crate crossbeam_channel;
 extern crate serde;
 extern crate termcolor;
 #[macro_use]
@@ -30,8 +31,6 @@ extern crate proptest;
 extern crate assert_fs;
 #[cfg(test)]
 extern crate predicates;
-
-use std::io::Write;
 
 /// Create a new output
 pub fn new() -> Output {
@@ -50,6 +49,12 @@ impl Output {
         self.targets.push(target);
         self
     }
+}
+
+#[test]
+fn assert_output_is_sync_and_send() {
+    fn assert_both<T: Send + Sync>() {}
+    assert_both::<Output>();
 }
 
 /// Known targets to write to
@@ -74,11 +79,27 @@ impl Output {
             match target {
                 Target::Human(fmt) => {
                     item.render_for_humans(fmt)?;
-                    fmt.writer.write_all(b"\n")?;
+                    fmt.write("\n")?;
                 }
                 Target::Json(fmt) => {
                     item.render_json(fmt)?;
-                    fmt.writer.write_all(b"\n")?;
+                    fmt.write_separator()?;
+                }
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Immediately write all buffered output
+    pub fn flush(&self) -> Result<(), Error> {
+        for target in &self.targets {
+            match target {
+                Target::Human(fmt) => {
+                    fmt.flush()?;
+                }
+                Target::Json(fmt) => {
+                    fmt.flush()?;
                 }
             }
         }
@@ -111,6 +132,7 @@ pub trait Render {
 /// let mut out = output::new().add_target(test_target.target());
 /// out.print(text("owned element"))?;
 /// out.print(&text("reference to an element"))?;
+/// # out.flush()?;
 /// # assert_eq!(test_target.to_string(), "owned element\nreference to an element\n");
 /// # Ok(()) }
 /// ```
@@ -138,12 +160,13 @@ where
 /// # let test_target = human::test();
 /// let mut out = output::new().add_target(test_target.target());
 /// out.print("Hello, World!")?;
+/// # out.flush()?;
 /// # assert_eq!(test_target.to_string(), "Hello, World!\n");
 /// # Ok(()) }
 /// ```
 impl<'a> Render for &'a str {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
-        fmt.writer.write_all(self.as_bytes())?;
+        fmt.write(self.as_bytes())?;
         Ok(())
     }
 

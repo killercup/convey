@@ -21,6 +21,7 @@
 //!     code: 42,
 //!     message: String::from("Derive works"),
 //! })?;
+//! # out.flush()?;
 //! # assert_eq!(test_target.to_string(), "code: 42\nmessage: Derive works\n\n");
 //! # Ok(()) }
 //! ```

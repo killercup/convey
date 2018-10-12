@@ -24,6 +24,7 @@ fn struct_with_named_fields_of_primitive_types() -> Result<(), output::Error> {
         name: String::from("info"),
         message: String::from("Derive works"),
     })?;
+    out.flush()?;
 
     assert_eq!(
         human.to_string(),
@@ -52,6 +53,7 @@ fn tuple_struct_of_primitive_types() -> Result<(), output::Error> {
         .add_target(json.target());
 
     out.print(&ErrorMessage(42, String::from("Derive works")))?;
+    out.flush()?;
 
     assert_eq!(human.to_string(), "(42, Derive works)\n");
 

@@ -1,4 +1,4 @@
-use termcolor::{ColorSpec, WriteColor};
+use termcolor::ColorSpec;
 use {human, json, Error, Render};
 
 /// Construct a new, empty span
@@ -96,7 +96,7 @@ impl Span {
 
 impl Render for Span {
     fn render_for_humans(&self, fmt: &mut human::Formatter) -> Result<(), Error> {
-        fmt.writer.set_color(
+        fmt.set_color(
             ColorSpec::new()
                 .set_fg(self.fg)
                 .set_bg(self.bg)
@@ -107,7 +107,7 @@ impl Render for Span {
         for item in &self.items {
             item.render_for_humans(fmt)?;
         }
-        fmt.writer.reset()?;
+        fmt.reset()?;
         Ok(())
     }
 
@@ -146,7 +146,10 @@ mod test {
     fn test_colored_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
         let mut out = ::new().add_target(test_target.target());
+
         out.print(span().add_item("hello").fg("green")?.bg("blue")?)?;
+        out.flush()?;
+
         assert_eq!(
             test_target.to_string(),
             "\u{1b}[0m\u{1b}[32m\u{1b}[44mhello\u{1b}[0m\n"
@@ -158,7 +161,10 @@ mod test {
     fn test_bold_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
         let mut out = ::new().add_target(test_target.target());
+
         out.print(span().add_item("hello").bold(true)?)?;
+        out.flush()?;
+
         assert_eq!(
             test_target.to_string(),
             "\u{1b}[0m\u{1b}[1mhello\u{1b}[0m\n"
@@ -170,7 +176,10 @@ mod test {
     fn test_intense_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
         let mut out = ::new().add_target(test_target.target());
+
         out.print(span().add_item("hello").fg("green")?.intense(true)?)?;
+        out.flush()?;
+
         assert_eq!(
             test_target.to_string(),
             "\u{1b}[0m\u{1b}[38;5;10mhello\u{1b}[0m\n"
@@ -182,7 +191,10 @@ mod test {
     fn test_underline_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
         let mut out = ::new().add_target(test_target.target());
+
         out.print(span().add_item("hello").underline(true)?)?;
+        out.flush()?;
+
         assert_eq!(
             test_target.to_string(),
             "\u{1b}[0m\u{1b}[4mhello\u{1b}[0m\n"
