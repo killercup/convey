@@ -1,16 +1,16 @@
 extern crate failure;
 #[macro_use]
-extern crate output;
+extern crate convey;
 #[macro_use]
 extern crate serde_derive;
 
-use output::{
+use convey::{
     components::{newline, text},
     human, json,
 };
 
 fn main() -> Result<(), failure::Error> {
-    let mut out = output::new()
+    let mut out = convey::new()
         .add_target(json::file("target/foo.log")?)
         .add_target(human::stdout()?);
 
@@ -21,7 +21,7 @@ fn main() -> Result<(), failure::Error> {
         message: String,
     }
 
-    impl output::Render for ErrorMessage {
+    impl convey::Render for ErrorMessage {
         render_for_humans!(self -> [
             span!(fg = "white", bg = "black", [text(self.code.to_string()), text(" "),]),
             span!(fg = "red", bg = "black", [text(&self.name),]),

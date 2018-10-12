@@ -3,11 +3,11 @@
 //! # Examples
 //!
 //! ```rust
-//! extern crate output;
+//! extern crate convey;
 //!
-//! fn main() -> Result<(), output::Error> {
-//!     let mut out = output::new().add_target(output::human::stdout()?);
-//!     out.print(output::components::text("hello world!"))?;
+//! fn main() -> Result<(), convey::Error> {
+//!     let mut out = convey::new().add_target(convey::human::stdout()?);
+//!     out.print(convey::components::text("hello world!"))?;
 //!     Ok(())
 //! }
 //! ```
@@ -132,11 +132,11 @@ pub trait Render {
 /// # Examples
 ///
 /// ```rust
-/// # extern crate output;
-/// # use output::{human, components::text};
-/// # fn main() -> Result<(), output::Error> {
+/// # extern crate convey;
+/// # use convey::{human, components::text};
+/// # fn main() -> Result<(), convey::Error> {
 /// # let test_target = human::test();
-/// let mut out = output::new().add_target(test_target.target());
+/// let mut out = convey::new().add_target(test_target.target());
 /// out.print(text("owned element"))?;
 /// out.print(&text("reference to an element"))?;
 /// # out.flush()?;
@@ -161,11 +161,11 @@ where
 /// # Examples
 ///
 /// ```rust
-/// # extern crate output;
-/// # use output::human;
-/// # fn main() -> Result<(), output::Error> {
+/// # extern crate convey;
+/// # use convey::human;
+/// # fn main() -> Result<(), convey::Error> {
 /// # let test_target = human::test();
-/// let mut out = output::new().add_target(test_target.target());
+/// let mut out = convey::new().add_target(test_target.target());
 /// out.print("Hello, World!")?;
 /// # out.flush()?;
 /// # assert_eq!(test_target.to_string(), "Hello, World!\n");
@@ -188,11 +188,11 @@ impl<'a> Render for &'a str {
 /// # Examples
 ///
 /// ```rust
-/// # extern crate output;
-/// # use output::human;
-/// # fn main() -> Result<(), output::Error> {
+/// # extern crate convey;
+/// # use convey::human;
+/// # fn main() -> Result<(), convey::Error> {
 /// # let test_target = human::test();
-/// let mut out = output::new().add_target(test_target.target());
+/// let mut out = convey::new().add_target(test_target.target());
 /// out.print(String::from("Hello, World!"))?;
 /// # out.flush()?;
 /// # assert_eq!(test_target.to_string(), "Hello, World!\n");

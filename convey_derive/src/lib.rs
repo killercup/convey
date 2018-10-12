@@ -3,8 +3,8 @@
 //! # Examples
 //!
 //! ```rust
-//! extern crate output;
-//! #[macro_use] extern crate output_derive;
+//! extern crate convey;
+//! #[macro_use] extern crate convey_derive;
 //! #[macro_use] extern crate serde_derive;
 //!
 //! #[derive(Serialize, RenderOutput)]
@@ -13,10 +13,10 @@
 //!     message: String,
 //! }
 //!
-//! # fn main() -> Result<(), output::Error> {
-//! # use output::human;
+//! # fn main() -> Result<(), convey::Error> {
+//! # use convey::human;
 //! # let test_target = human::test();
-//! let mut out = output::new().add_target(test_target.target());
+//! let mut out = convey::new().add_target(test_target.target());
 //! out.print(&Message {
 //!     code: 42,
 //!     message: String::from("Derive works"),
@@ -54,11 +54,11 @@ pub fn render_output(input: TokenStream) -> TokenStream {
                     .iter()
                     .map(|f| f.ident.clone().unwrap().to_string());
                 quote! {
-                    let mut span = output::components::span();
+                    let mut span = convey::components::span();
                     #(
                         span = span.add_item(#names);
                         span = span.add_item(": ");
-                        span = span.add_item(output::components::text(&self.#fields.to_string()));
+                        span = span.add_item(convey::components::text(&self.#fields.to_string()));
                         span = span.add_item("\n");
                     )*
                     span.render_for_humans(fmt)?;
@@ -68,7 +68,7 @@ pub fn render_output(input: TokenStream) -> TokenStream {
                 let field_count = s.fields.iter().count();
                 let fields = (0..field_count)
                         .fold(Vec::new(), |mut res, i| {
-                            res.push(quote! { span = span.add_item(output::components::text(&self.#i.to_string())); });
+                            res.push(quote! { span = span.add_item(convey::components::text(&self.#i.to_string())); });
                             if i < field_count - 1 {
                                 res.push(quote! { span = span.add_item(", "); });
                             }
@@ -76,7 +76,7 @@ pub fn render_output(input: TokenStream) -> TokenStream {
                         });
 
                 quote! {
-                    let mut span = output::components::span();
+                    let mut span = convey::components::span();
                     span = span.add_item("(");
                     #(#fields)*
                     span = span.add_item(")");
@@ -88,13 +88,13 @@ pub fn render_output(input: TokenStream) -> TokenStream {
         _ => panic!("Only structs supported for now, sorry."),
     };
     let exp = quote! {
-        impl output::Render for #name {
-            fn render_for_humans(&self, fmt: &mut output::human::Formatter) -> Result<(), output::Error> {
+        impl convey::Render for #name {
+            fn render_for_humans(&self, fmt: &mut convey::human::Formatter) -> Result<(), convey::Error> {
                 #render_span
                 Ok(())
             }
 
-            fn render_json(&self, fmt: &mut output::json::Formatter) -> Result<(), output::Error> {
+            fn render_json(&self, fmt: &mut convey::json::Formatter) -> Result<(), convey::Error> {
                 fmt.write(self)?;
                 Ok(())
             }

@@ -167,10 +167,10 @@ enum Response {
 /// # Examples
 ///
 /// ```rust
-/// #[macro_use] extern crate output;
+/// #[macro_use] extern crate convey;
 /// #[macro_use] extern crate serde_derive;
 ///
-/// use output::{components::{text, newline}, Render};
+/// use convey::{components::{text, newline}, Render};
 ///
 /// #[derive(Serialize)]
 /// struct Message {
@@ -192,8 +192,8 @@ enum Response {
 ///     render_json!();
 /// }
 ///
-/// fn main() -> Result<(), output::Error> {
-///     let mut out = output::new().add_target(output::human::stdout()?);
+/// fn main() -> Result<(), convey::Error> {
+///     let mut out = convey::new().add_target(convey::human::stdout()?);
 ///     out.print(Message { author: "Pascal".into(), body: "Lorem ipsum dolor".into() })?;
 ///     Ok(())
 /// }
@@ -231,12 +231,12 @@ mod test_helper {
     /// # Usage
     ///
     /// ```rust
-    /// extern crate output;
+    /// extern crate convey;
     ///
-    /// fn main() -> Result<(), output::Error> {
-    ///     let test_target = output::human::test();
-    ///     let mut out = output::new().add_target(test_target.target());
-    ///     out.print(output::components::text("lorem ipsum"))?;
+    /// fn main() -> Result<(), convey::Error> {
+    ///     let test_target = convey::human::test();
+    ///     let mut out = convey::new().add_target(test_target.target());
+    ///     out.print(convey::components::text("lorem ipsum"))?;
     ///     out.flush()?;
     ///
     ///     assert_eq!(test_target.to_string(), "lorem ipsum\n");

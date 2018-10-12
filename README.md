@@ -1,4 +1,6 @@
-# Output – Easily Output Your Data for Humans and Machines Alike
+# Convey
+
+> **Easily Output Your Data for Humans and Machines Alike**
 
 [![Build Status](https://travis-ci.com/killercup/output-rs.svg?branch=master)](https://travis-ci.com/killercup/output-rs)
 

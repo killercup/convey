@@ -1,15 +1,15 @@
 [package]
-name = "output"
+name = "convey"
 version = "0.1.0"
 authors = ["Pascal Hertleif <killercup@gmail.com>"]
 description = "A Rust create for outputting information and log messages for humans and machines"
 license = "Apache-2.0 OR MIT"
 readme = "README.md"
-repository = "https://github.com/killercup/output-rs"
+repository = "https://github.com/killercup/convey"
 
 [workspace]
 members = [
-    "output_derive"
+    "convey_derive"
 ]
 
 [dependencies]
@@ -25,5 +25,5 @@ crossbeam-channel = "0.2.6"
 proptest = "0.8.7"
 assert_fs = "0.9.0"
 predicates = "0.9.0"
-output_derive = { version = "0.1", path = "output_derive" }
+convey_derive = { version = "0.1", path = "convey_derive" }
 rand = "0.5.5"
