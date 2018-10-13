@@ -1,41 +1,84 @@
+use failure::{Backtrace, Context, Fail};
 use serde_json::Error as JsonError;
+use std::fmt::{self, Display};
 use std::io;
+use std::sync::PoisonError;
 use termcolor::ParseColorError;
 
+#[derive(Debug)]
 /// Output's error type
+pub struct Error {
+    inner: Context<InnerError>,
+}
+
+impl Fail for Error {
+    fn cause(&self) -> Option<&Fail> {
+        self.inner.cause()
+    }
+
+    fn backtrace(&self) -> Option<&Backtrace> {
+        self.inner.backtrace()
+    }
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        Display::fmt(&self.inner, f)
+    }
+}
+
 #[derive(Fail, Debug)]
-pub enum Error {
-    /// I/O Error
+enum InnerError {
     #[fail(display = "IO error: {}", _0)]
     Io(io::Error),
-    /// Error parsing a color value
+
     #[fail(display = "{}", _0)]
     ParseColorError(ParseColorError),
-    /// Error dealing with JSON
-    #[fail(display = "{}", _0)]
+
+    #[fail(display = "Json error: {}", _0)]
     Json(JsonError),
-    /// Error in formatting worker
-    #[fail(display = "{}", _0)]
+
+    #[fail(display = "Worker error: {}", _0)]
     WorkerError(String),
-    /// Error syncing output
+
     #[fail(display = "Error syncing output")]
-    SyncError,
+    SyncError(String),
+}
+
+impl Error {
+    pub(crate) fn worker_error(x: String) -> Self {
+        Error {
+            inner: Context::new(InnerError::WorkerError(x)),
+        }
+    }
+
+    pub(crate) fn sync_error<T>(x: &PoisonError<T>) -> Self {
+        Error {
+            inner: Context::new(InnerError::SyncError(x.to_string())),
+        }
+    }
 }
 
 impl From<io::Error> for Error {
     fn from(x: io::Error) -> Self {
-        Error::Io(x)
+        Error {
+            inner: Context::new(InnerError::Io(x)),
+        }
     }
 }
 
 impl From<ParseColorError> for Error {
     fn from(x: ParseColorError) -> Self {
-        Error::ParseColorError(x)
+        Error {
+            inner: Context::new(InnerError::ParseColorError(x)),
+        }
     }
 }
 
 impl From<JsonError> for Error {
     fn from(x: JsonError) -> Self {
-        Error::Json(x)
+        Error {
+            inner: Context::new(InnerError::Json(x)),
+        }
     }
 }

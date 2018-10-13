@@ -4,29 +4,29 @@ use serde::Serialize;
 use serde_json::to_vec as write_json;
 use std::io::Write;
 use std::path::Path;
-use std::sync::{Arc, Mutex};
+use std::sync::Arc;
 use {Error, Target};
 
 /// Create a new JSON output that writes to a file
 pub fn file<T: AsRef<Path>>(name: T) -> Result<Target, Error> {
     let path = name.as_ref().to_path_buf();
-    Ok(Target::Json(Arc::new(Mutex::new(Formatter::init_with(
-        move || {
-            use std::fs::{File, OpenOptions};
-            use std::io::BufWriter;
+    let formatter = Formatter::init_with(move || {
+        use std::fs::{File, OpenOptions};
+        use std::io::BufWriter;
 
-            let target = if path.exists() {
-                let mut f = OpenOptions::new().write(true).append(true).open(&path)?;
-                f.write_all(b"\n")?;
+        let target = if path.exists() {
+            let mut f = OpenOptions::new().write(true).append(true).open(&path)?;
+            f.write_all(b"\n")?;
 
-                f
-            } else {
-                File::create(&path)?
-            };
+            f
+        } else {
+            File::create(&path)?
+        };
 
-            Ok(BufWriter::new(target))
-        },
-    )?))))
+        Ok(BufWriter::new(target))
+    })?;
+
+    Ok(Target::json(formatter))
 }
 
 pub use self::test_helper::test;
@@ -58,7 +58,7 @@ impl Formatter {
 
         match self.inner.receiver.recv() {
             Some(Response::Flushed) => Ok(()),
-            msg => Err(Error::WorkerError(format!("unexpected message {:?}", msg))),
+            msg => Err(Error::worker_error(format!("unexpected message {:?}", msg))),
         }
     }
 
@@ -137,7 +137,7 @@ impl InternalFormatter {
                 sender: message_sender,
                 receiver: response_receiver,
             }),
-            msg => Err(Error::WorkerError(format!("unexpected message {:?}", msg))),
+            msg => Err(Error::worker_error(format!("unexpected message {:?}", msg))),
         }
     }
 }
@@ -207,7 +207,6 @@ macro_rules! render_json {
 
 mod test_helper {
     use super::Formatter;
-    use std::sync::{Arc, Mutex};
     use termcolor::Buffer;
     use test_buffer::TestBuffer;
     use Target;
@@ -264,7 +263,7 @@ mod test_helper {
         }
 
         pub fn target(&self) -> Target {
-            Target::Json(Arc::new(Mutex::new(self.formatter())))
+            Target::json(self.formatter())
         }
 
         pub fn to_string(&self) -> String {

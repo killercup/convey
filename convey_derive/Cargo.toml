@@ -1,6 +1,6 @@
 [package]
 name = "convey_derive"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Katharina Fey <kookie@spacekookie.de>", "Pascal Hertleif <killercup@gmail.com>"]
 description = "A Rust create for outputting information and log messages for humans and machines"
 license = "Apache-2.0 OR MIT"
@@ -14,6 +14,6 @@ syn = "0.15"
 quote = "0.6"
 
 [dev-dependencies]
-convey = { version = "0.1", path = ".." }
+convey = { version = "0.2", path = ".." }
 serde = "1.0.79"
 serde_derive = "1.0.79"
