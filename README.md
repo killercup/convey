@@ -2,7 +2,7 @@
 
 > **Easily Output Your Data for Humans and Machines Alike**
 
-[![Build Status](https://travis-ci.com/killercup/output-rs.svg?branch=master)](https://travis-ci.com/killercup/output-rs)
+[![Build Status](https://travis-ci.com/killercup/convey.svg?branch=master)](https://travis-ci.com/killercup/convey)
 
 This is very much work in progress.
 You can find a draft of initial ideas [here](https://github.com/rustwasm/wasm-pack/issues/298#issuecomment-423747454).
