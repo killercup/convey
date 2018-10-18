@@ -11,7 +11,7 @@ This project and everyone participating in it is governed by
 [this Code of Conduct](CODE_OF_CONDUCT.md).
 By participating, you are expected to uphold this code.
 
-# Submitting bug reports
+## Submitting bug reports
 
 Open an issue in which you:
 
@@ -19,7 +19,7 @@ Open an issue in which you:
 - Explain what you are trying to do
 - Try to provide a small, reproducible example of the issue.
 
-# Submitting feature requests
+## Submitting feature requests
 
 First,
 please check the exising (open and closed) issues
@@ -38,7 +38,7 @@ provide a list of criteria
 that needs to be met by a future version of this library
 so you can use this feature.
 
-# Submitting a pull request
+## Submitting a pull request
 
 Do you want to submit a quick typo fix or something similar?
 No need to read further, just send a PR!
@@ -64,7 +64,7 @@ Please nevertheless try to include something like
 (where `#42` is the issue this feature is described in)
 in your PR description and/or commit messages.
 
-## Required setup
+### Required setup
 
 To work on this project, you'll need
 
@@ -78,11 +78,11 @@ To work on this project, you'll need
 
 [rust-docs]: https://doc.rust-lang.org/
 
-## Code style
+### Code style
 
 Every PR is checked by a continuous integration system, which
 compiles the code (`cargo build`),
-run all the tests (`cargo test`),
+runs all the tests (`cargo test`),
 checks code formatting (`cargo fmt`),
 and checks various lints (`cargo clippy`).
 
@@ -92,7 +92,7 @@ before submitting your pull requests or updates to it.
 
 [ci]: .travis.yml
 
-## Commit messages
+### Commit messages
 
 Your commits and their messages
 are what separates total confusion
@@ -113,7 +113,7 @@ It's recommended to separate larger pull requests
 into many small commits
 that build upon each other.
 
-## What then?
+### What then?
 
 After submitting your pull request,
 it's our turn!
@@ -133,6 +133,6 @@ Please push any changes you make
 after the first round of feedback
 as new commits to the same branch.
 
-- - -
+## Thanks!
 
 We're very much looking forward to your contributions!
