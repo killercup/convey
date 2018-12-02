@@ -205,7 +205,7 @@ macro_rules! render_for_humans {
     };
     ($self:ident -> [$($item:expr,)*]) => {
         fn render_for_humans(&$self, fmt: &mut $crate::human::Formatter) -> Result<(), $crate::Error> {
-            let span = span!([ $( $item, )* ]);
+            let span = $crate::span!([ $( $item, )* ]);
             span.render_for_humans(fmt)?;
             Ok(())
         }
