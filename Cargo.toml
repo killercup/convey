@@ -27,3 +27,4 @@ assert_fs = "0.9.0"
 predicates = "0.9.0"
 convey_derive = { version = "0.2", path = "convey_derive" }
 rand = "0.5.5"
+structopt = "0.2"

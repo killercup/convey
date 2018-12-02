@@ -11,7 +11,7 @@ pub fn span() -> Span {
 macro_rules! __inner_span {
     ($span:ident, $attr:ident = $val:expr, $($token:tt)*) => {
         $span = $span.$attr($val)?;
-        __inner_span!($span, $($token)*);
+        $crate::__inner_span!($span, $($token)*);
     };
     ($span:ident, [$($item:expr,)*]) => {
         $(
@@ -46,7 +46,7 @@ macro_rules! span {
     ($($token:tt)*) => {
         {
             let mut the_span = $crate::components::span();
-            __inner_span!(the_span, $($token)*);
+            $crate::__inner_span!(the_span, $($token)*);
             the_span
         }
     };

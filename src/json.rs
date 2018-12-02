@@ -7,6 +7,14 @@ use std::path::Path;
 use std::sync::Arc;
 use {Error, Target};
 
+/// Construct a new JSON output target that writes to stdout
+pub fn stdout() -> Result<Target, Error> {
+    use std::io::{stdout, BufWriter};
+
+    let formatter = Formatter::init_with(|| Ok(BufWriter::new(stdout())))?;
+    Ok(Target::json(formatter))
+}
+
 /// Create a new JSON output that writes to a file
 pub fn file<T: AsRef<Path>>(name: T) -> Result<Target, Error> {
     let path = name.as_ref().to_path_buf();
