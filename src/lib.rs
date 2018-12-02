@@ -14,10 +14,9 @@
 
 #![warn(missing_docs)]
 
-extern crate failure;
-#[macro_use]
-extern crate failure_derive;
 extern crate crossbeam_channel;
+extern crate failure;
+extern crate failure_derive;
 extern crate serde;
 extern crate termcolor;
 #[macro_use]

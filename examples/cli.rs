@@ -1,16 +1,15 @@
 extern crate failure;
-#[macro_use]
 extern crate structopt;
 #[macro_use]
 extern crate serde_derive;
 #[macro_use]
 extern crate convey;
 
-use structopt::StructOpt;
 use convey::{
     components::{newline, text},
     human, json,
 };
+use structopt::StructOpt;
 
 /// Demo stuff
 #[derive(StructOpt)]
