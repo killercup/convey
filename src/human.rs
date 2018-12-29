@@ -29,34 +29,35 @@ impl Formatter {
 
     /// Write to target
     pub fn write<D: Into<Vec<u8>>>(&self, data: D) -> Result<(), Error> {
-        self.send(Message::Write(data.into()));
+        self.send(Message::Write(data.into()))?;
         Ok(())
     }
 
     /// Set color
     pub fn set_color(&self, spec: &ColorSpec) -> Result<(), Error> {
-        self.send(Message::SetColor(spec.clone()));
+        self.send(Message::SetColor(spec.clone()))?;
         Ok(())
     }
 
     /// Reset color and styling
     pub fn reset(&self) -> Result<(), Error> {
-        self.send(Message::ResetStyle);
+        self.send(Message::ResetStyle)?;
         Ok(())
     }
 
     /// Immediately write all buffered output
     pub fn flush(&self) -> Result<(), Error> {
-        self.send(Message::Flush);
+        self.send(Message::Flush)?;
 
         match self.inner.receiver.recv() {
-            Some(Response::Flushed) => Ok(()),
+            Ok(Response::Flushed) => Ok(()),
             msg => Err(Error::worker_error(format!("unexpected message {:?}", msg))),
         }
     }
 
-    fn send(&self, msg: Message) {
-        self.inner.sender.send(msg);
+    fn send(&self, msg: Message) -> Result<(), Error> {
+        self.inner.sender.send(msg)?;
+        Ok(())
     }
 }
 
@@ -80,11 +81,11 @@ impl InternalFormatter {
         let worker = thread::spawn(move || {
             let mut buffer = match init() {
                 Ok(buf) => {
-                    response_sender.send(Response::StartedSuccessfully);
+                    let _ = response_sender.send(Response::StartedSuccessfully);
                     buf
                 }
                 Err(e) => {
-                    response_sender.send(Response::Error(e));
+                    let _ = response_sender.send(Response::Error(e));
                     return;
                 }
             };
@@ -103,20 +104,20 @@ impl InternalFormatter {
 
             loop {
                 match message_receiver.recv() {
-                    Some(Message::Write(data)) => {
+                    Ok(Message::Write(data)) => {
                         let _ = buffer.write_all(&data).map_err(maybe_log_error!());
                     }
-                    Some(Message::SetColor(data)) => {
+                    Ok(Message::SetColor(data)) => {
                         let _ = buffer.set_color(&data).map_err(maybe_log_error!());
                     }
-                    Some(Message::ResetStyle) => {
+                    Ok(Message::ResetStyle) => {
                         let _ = buffer.reset().map_err(maybe_log_error!());
                     }
-                    Some(Message::Flush) => {
+                    Ok(Message::Flush) => {
                         let _ = buffer.flush().map_err(maybe_log_error!());
-                        response_sender.send(Response::Flushed);
+                        let _ = response_sender.send(Response::Flushed);
                     }
-                    Some(Message::Exit) | None => {
+                    Ok(Message::Exit) | Err(_) => {
                         break;
                     }
                 };
@@ -124,8 +125,8 @@ impl InternalFormatter {
         });
 
         match response_receiver.recv() {
-            Some(Response::Error(error)) => Err(error),
-            Some(Response::StartedSuccessfully) => Ok(InternalFormatter {
+            Ok(Response::Error(error)) => Err(error),
+            Ok(Response::StartedSuccessfully) => Ok(InternalFormatter {
                 worker: Some(worker),
                 sender: message_sender,
                 receiver: response_receiver,
@@ -137,7 +138,7 @@ impl InternalFormatter {
 
 impl Drop for InternalFormatter {
     fn drop(&mut self) {
-        self.sender.send(Message::Exit);
+        let _ = self.sender.send(Message::Exit);
         // TODO: Docs say this may panic, so have a look at how to deal with that.
         if let Some(worker) = self.worker.take() {
             let _ = worker.join();

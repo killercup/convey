@@ -43,6 +43,9 @@ enum InnerError {
 
     #[fail(display = "Error syncing output")]
     SyncError(String),
+
+    #[fail(display = "Error sending data to channel")]
+    ChannelError(String),
 }
 
 impl Error {
@@ -79,6 +82,14 @@ impl From<JsonError> for Error {
     fn from(x: JsonError) -> Self {
         Error {
             inner: Context::new(InnerError::Json(x)),
+        }
+    }
+}
+
+impl<T: std::fmt::Debug> From<crossbeam_channel::SendError<T>> for Error {
+    fn from(x: crossbeam_channel::SendError<T>) -> Self {
+        Error {
+            inner: Context::new(InnerError::ChannelError(x.to_string())),
         }
     }
 }
