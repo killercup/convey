@@ -28,6 +28,7 @@ extern crate serde_json;
 extern crate proptest;
 #[cfg(test)]
 extern crate assert_fs;
+extern crate log;
 #[cfg(test)]
 extern crate predicates;
 
@@ -45,6 +46,7 @@ pub struct Output {
 #[derive(Default, Clone)]
 struct InnerOutput {
     targets: Vec<Target>,
+    log_level: Option<log::Level>,
 }
 
 impl Output {
@@ -54,6 +56,30 @@ impl Output {
             let mut o = self.inner.lock().map_err(|e| Error::sync_error(&e))?;
             o.targets.push(target);
         }
+        Ok(self)
+    }
+
+    /// Initializes the global logger with an `Output` instance with
+    /// `max_log_level` set to a specific log level.
+    ///
+    /// ```
+    /// # extern crate convey;
+    /// # fn main() -> Result<(), convey::Error> {
+    /// let output = convey::new()
+    ///     .add_target(convey::human::stdout()?)?
+    ///     .use_as_logger(log::Level::Debug)?;
+    ///
+    /// log::info!("welcome");
+    /// log::error!("oh noes");
+    /// # Ok(()) }
+    /// ```
+    pub fn use_as_logger(self, level: log::Level) -> Result<Self, Error> {
+        {
+            let mut o = self.inner.lock().map_err(|e| Error::sync_error(&e))?;
+            o.log_level = Some(level);
+        }
+        log::set_boxed_logger(Box::new(self.clone()))?;
+        log::set_max_level(level.to_level_filter());
         Ok(self)
     }
 }
@@ -241,5 +267,7 @@ impl<'a> Render for String {
 pub mod components;
 pub mod human;
 pub mod json;
+
+mod logging;
 
 mod test_buffer;
