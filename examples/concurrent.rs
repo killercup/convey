@@ -9,8 +9,8 @@ use std::time::Duration;
 
 fn main() -> Result<(), failure::Error> {
     let out = convey::new()
-        .add_target(json::file("target/foo.log")?)
-        .add_target(human::stdout()?);
+        .add_target(json::file("target/foo.log")?)?
+        .add_target(human::stdout()?)?;
 
     let mut threads = vec![];
     for i in 0..100 {

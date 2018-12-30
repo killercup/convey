@@ -6,7 +6,7 @@
 //! extern crate convey;
 //!
 //! fn main() -> Result<(), convey::Error> {
-//!     let mut out = convey::new().add_target(convey::human::stdout()?);
+//!     let mut out = convey::new().add_target(convey::human::stdout()?)?;
 //!     out.print(convey::components::text("hello world!"))?;
 //!     Ok(())
 //! }
@@ -39,14 +39,22 @@ pub fn new() -> Output {
 /// Structure holding your output targets
 #[derive(Default, Clone)]
 pub struct Output {
+    inner: Arc<Mutex<InnerOutput>>,
+}
+
+#[derive(Default, Clone)]
+struct InnerOutput {
     targets: Vec<Target>,
 }
 
 impl Output {
     /// Add a target to output to
-    pub fn add_target(mut self, target: Target) -> Self {
-        self.targets.push(target);
-        self
+    pub fn add_target(self, target: Target) -> Result<Self, Error> {
+        {
+            let mut o = self.inner.lock().map_err(|e| Error::sync_error(&e))?;
+            o.targets.push(target);
+        }
+        Ok(self)
     }
 }
 
@@ -95,8 +103,9 @@ pub use error::Error;
 
 impl Output {
     /// Print some item to the currently active output targets
-    pub fn print<O: Render>(&mut self, item: O) -> Result<(), Error> {
-        for target in &mut self.targets {
+    pub fn print<O: Render>(&self, item: O) -> Result<(), Error> {
+        let mut o = self.inner.lock().map_err(|e| Error::sync_error(&e))?;
+        for target in &mut o.targets {
             match &target.inner {
                 InnerTarget::Human(fmt) => {
                     let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
@@ -116,7 +125,8 @@ impl Output {
 
     /// Immediately write all buffered output
     pub fn flush(&self) -> Result<(), Error> {
-        for target in &self.targets {
+        let o = self.inner.lock().map_err(|e| Error::sync_error(&e))?;
+        for target in &o.targets {
             match &target.inner {
                 InnerTarget::Human(fmt) => {
                     let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
@@ -154,7 +164,7 @@ pub trait Render {
 /// # use convey::{human, components::text};
 /// # fn main() -> Result<(), convey::Error> {
 /// # let test_target = human::test();
-/// let mut out = convey::new().add_target(test_target.target());
+/// let mut out = convey::new().add_target(test_target.target())?;
 /// out.print(text("owned element"))?;
 /// out.print(&text("reference to an element"))?;
 /// # out.flush()?;
@@ -183,7 +193,7 @@ where
 /// # use convey::human;
 /// # fn main() -> Result<(), convey::Error> {
 /// # let test_target = human::test();
-/// let mut out = convey::new().add_target(test_target.target());
+/// let mut out = convey::new().add_target(test_target.target())?;
 /// out.print("Hello, World!")?;
 /// # out.flush()?;
 /// # assert_eq!(test_target.to_string(), "Hello, World!\n");
@@ -210,7 +220,7 @@ impl<'a> Render for &'a str {
 /// # use convey::human;
 /// # fn main() -> Result<(), convey::Error> {
 /// # let test_target = human::test();
-/// let mut out = convey::new().add_target(test_target.target());
+/// let mut out = convey::new().add_target(test_target.target())?;
 /// out.print(String::from("Hello, World!"))?;
 /// # out.flush()?;
 /// # assert_eq!(test_target.to_string(), "Hello, World!\n");

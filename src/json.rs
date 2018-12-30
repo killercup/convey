@@ -198,7 +198,7 @@ enum Response {
 /// }
 ///
 /// fn main() -> Result<(), convey::Error> {
-///     let mut out = convey::new().add_target(convey::human::stdout()?);
+///     let mut out = convey::new().add_target(convey::human::stdout()?)?;
 ///     out.print(Message { author: "Pascal".into(), body: "Lorem ipsum dolor".into() })?;
 ///     Ok(())
 /// }
@@ -233,7 +233,7 @@ mod test_helper {
     ///
     /// fn main() -> Result<(), convey::Error> {
     ///     let test_target = convey::json::test();
-    ///     let mut out = convey::new().add_target(test_target.target());
+    ///     let mut out = convey::new().add_target(test_target.target())?;
     ///
     ///     #[derive(Serialize)]
     ///     struct Message {
@@ -341,7 +341,7 @@ mod tests {
         log_file.assert(predicate::path::exists());
 
         let target = json::file(log_file.path())?;
-        let mut output = ::new().add_target(target);
+        let output = ::new().add_target(target)?;
         output.print("wtf")?;
         output.flush()?;
 

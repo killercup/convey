@@ -21,10 +21,10 @@ struct Cli {
 
 fn main() -> Result<(), failure::Error> {
     let args = Cli::from_args();
-    let mut out = if args.json {
-        convey::new().add_target(json::stdout()?)
+    let out = if args.json {
+        convey::new().add_target(json::stdout()?)?
     } else {
-        convey::new().add_target(human::stdout()?)
+        convey::new().add_target(human::stdout()?)?
     };
 
     let x = 42;

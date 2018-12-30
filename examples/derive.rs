@@ -8,9 +8,9 @@ extern crate serde_derive;
 use convey::{human, json};
 
 fn main() -> Result<(), failure::Error> {
-    let mut out = convey::new()
-        .add_target(json::file("target/foo.log")?)
-        .add_target(human::stdout()?);
+    let out = convey::new()
+        .add_target(json::file("target/foo.log")?)?
+        .add_target(human::stdout()?)?;
 
     #[derive(Serialize, RenderOutput)]
     struct ErrorMessage {

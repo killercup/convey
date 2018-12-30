@@ -31,7 +31,7 @@ macro_rules! __inner_span {
 /// fn main() -> Result<(), convey::Error> {
 ///     use convey::{components::text, human};
 ///
-///     let mut out = convey::new().add_target(human::stdout()?);
+///     let mut out = convey::new().add_target(human::stdout()?)?;
 ///
 ///     let message = span!(fg = "red", [
 ///         text("hello"),
@@ -149,7 +149,7 @@ mod test {
     #[test]
     fn test_colored_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
-        let mut out = ::new().add_target(test_target.target());
+        let out = ::new().add_target(test_target.target())?;
 
         out.print(span().add_item("hello").fg("green")?.bg("blue")?)?;
         out.flush()?;
@@ -164,7 +164,7 @@ mod test {
     #[test]
     fn test_bold_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
-        let mut out = ::new().add_target(test_target.target());
+        let out = ::new().add_target(test_target.target())?;
 
         out.print(span().add_item("hello").bold(true)?)?;
         out.flush()?;
@@ -179,7 +179,7 @@ mod test {
     #[test]
     fn test_intense_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
-        let mut out = ::new().add_target(test_target.target());
+        let out = ::new().add_target(test_target.target())?;
 
         out.print(span().add_item("hello").fg("green")?.intense(true)?)?;
         out.flush()?;
@@ -194,7 +194,7 @@ mod test {
     #[test]
     fn test_underline_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
-        let mut out = ::new().add_target(test_target.target());
+        let out = ::new().add_target(test_target.target())?;
 
         out.print(span().add_item("hello").underline(true)?)?;
         out.flush()?;

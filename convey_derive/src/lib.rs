@@ -16,7 +16,7 @@
 //! # fn main() -> Result<(), convey::Error> {
 //! # use convey::human;
 //! # let test_target = human::test();
-//! let mut out = convey::new().add_target(test_target.target());
+//! let out = convey::new().add_target(test_target.target())?;
 //! out.print(&Message {
 //!     code: 42,
 //!     message: String::from("Derive works"),

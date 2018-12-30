@@ -192,7 +192,7 @@ enum Response {
 /// }
 ///
 /// fn main() -> Result<(), convey::Error> {
-///     let mut out = convey::new().add_target(convey::human::stdout()?);
+///     let mut out = convey::new().add_target(convey::human::stdout()?)?;
 ///     out.print(Message { author: "Pascal".into(), body: "Lorem ipsum dolor".into() })?;
 ///     Ok(())
 /// }
@@ -233,7 +233,7 @@ mod test_helper {
     ///
     /// fn main() -> Result<(), convey::Error> {
     ///     let test_target = convey::human::test();
-    ///     let mut out = convey::new().add_target(test_target.target());
+    ///     let mut out = convey::new().add_target(test_target.target())?;
     ///     out.print(convey::components::text("lorem ipsum"))?;
     ///     out.flush()?;
     ///
