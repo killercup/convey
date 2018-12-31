@@ -6,7 +6,7 @@
 //! extern crate convey;
 //!
 //! fn main() -> Result<(), convey::Error> {
-//!     let mut out = convey::new().add_target(convey::human::stdout()?);
+//!     let mut out = convey::new().add_target(convey::human::stdout()?)?;
 //!     out.print(convey::components::text("hello world!"))?;
 //!     Ok(())
 //! }
@@ -14,22 +14,7 @@
 
 #![warn(missing_docs)]
 
-extern crate crossbeam_channel;
-extern crate failure;
-extern crate failure_derive;
-extern crate serde;
-extern crate termcolor;
-#[macro_use]
-extern crate serde_derive;
-#[cfg_attr(test, macro_use)]
-extern crate serde_json;
-#[cfg(test)]
-#[macro_use]
-extern crate proptest;
-#[cfg(test)]
-extern crate assert_fs;
-#[cfg(test)]
-extern crate predicates;
+use failure;
 
 /// Create a new output
 pub fn new() -> Output {
@@ -39,14 +24,49 @@ pub fn new() -> Output {
 /// Structure holding your output targets
 #[derive(Default, Clone)]
 pub struct Output {
+    inner: Arc<Mutex<InnerOutput>>,
+}
+
+#[derive(Default, Clone)]
+struct InnerOutput {
     targets: Vec<Target>,
+    #[cfg(feature = "log")]
+    log_level: Option<log::Level>,
 }
 
 impl Output {
     /// Add a target to output to
-    pub fn add_target(mut self, target: Target) -> Self {
-        self.targets.push(target);
-        self
+    pub fn add_target(self, target: Target) -> Result<Self, Error> {
+        {
+            let mut o = self.inner.lock().map_err(|e| Error::sync_error(&e))?;
+            o.targets.push(target);
+        }
+        Ok(self)
+    }
+
+    /// Initializes the global logger with an `Output` instance with
+    /// `max_log_level` set to a specific log level.
+    ///
+    /// ```
+    /// # extern crate convey;
+    /// # fn main() -> Result<(), convey::Error> {
+    /// let output = convey::new()
+    ///     .add_target(convey::human::stdout()?)?
+    ///     .use_as_logger(log::Level::Debug)?;
+    ///
+    /// log::info!("welcome");
+    /// log::error!("oh noes");
+    /// # Ok(()) }
+    /// ```
+    #[cfg(feature = "log")]
+    pub fn use_as_logger(self, level: log::Level) -> Result<Self, Error> {
+        {
+            let mut o = self.inner.lock().map_err(|e| Error::sync_error(&e))?;
+            o.log_level = Some(level);
+        }
+        log::set_boxed_logger(Box::new(self.clone()))?;
+        log::set_max_level(level.to_level_filter());
+        Ok(self)
     }
 }
 
@@ -91,12 +111,13 @@ enum InnerTarget {
 }
 
 mod error;
-pub use error::Error;
+pub use crate::error::Error;
 
 impl Output {
     /// Print some item to the currently active output targets
-    pub fn print<O: Render>(&mut self, item: O) -> Result<(), Error> {
-        for target in &mut self.targets {
+    pub fn print<O: Render>(&self, item: O) -> Result<(), Error> {
+        let mut o = self.inner.lock().map_err(|e| Error::sync_error(&e))?;
+        for target in &mut o.targets {
             match &target.inner {
                 InnerTarget::Human(fmt) => {
                     let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
@@ -116,14 +137,15 @@ impl Output {
 
     /// Immediately write all buffered output
     pub fn flush(&self) -> Result<(), Error> {
-        for target in &self.targets {
+        let o = self.inner.lock().map_err(|e| Error::sync_error(&e))?;
+        for target in &o.targets {
             match &target.inner {
                 InnerTarget::Human(fmt) => {
-                    let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
+                    let fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
                     fmt.flush()?;
                 }
                 InnerTarget::Json(fmt) => {
-                    let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
+                    let fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
                     fmt.flush()?;
                 }
             }
@@ -154,7 +176,7 @@ pub trait Render {
 /// # use convey::{human, components::text};
 /// # fn main() -> Result<(), convey::Error> {
 /// # let test_target = human::test();
-/// let mut out = convey::new().add_target(test_target.target());
+/// let mut out = convey::new().add_target(test_target.target())?;
 /// out.print(text("owned element"))?;
 /// out.print(&text("reference to an element"))?;
 /// # out.flush()?;
@@ -183,7 +205,7 @@ where
 /// # use convey::human;
 /// # fn main() -> Result<(), convey::Error> {
 /// # let test_target = human::test();
-/// let mut out = convey::new().add_target(test_target.target());
+/// let mut out = convey::new().add_target(test_target.target())?;
 /// out.print("Hello, World!")?;
 /// # out.flush()?;
 /// # assert_eq!(test_target.to_string(), "Hello, World!\n");
@@ -210,7 +232,7 @@ impl<'a> Render for &'a str {
 /// # use convey::human;
 /// # fn main() -> Result<(), convey::Error> {
 /// # let test_target = human::test();
-/// let mut out = convey::new().add_target(test_target.target());
+/// let mut out = convey::new().add_target(test_target.target())?;
 /// out.print(String::from("Hello, World!"))?;
 /// # out.flush()?;
 /// # assert_eq!(test_target.to_string(), "Hello, World!\n");
@@ -231,5 +253,8 @@ impl<'a> Render for String {
 pub mod components;
 pub mod human;
 pub mod json;
+
+#[cfg(feature = "log")]
+mod logging;
 
 mod test_buffer;

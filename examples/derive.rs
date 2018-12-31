@@ -1,5 +1,5 @@
-extern crate convey;
-extern crate failure;
+use convey;
+use failure;
 #[macro_use]
 extern crate convey_derive;
 #[macro_use]
@@ -8,9 +8,9 @@ extern crate serde_derive;
 use convey::{human, json};
 
 fn main() -> Result<(), failure::Error> {
-    let mut out = convey::new()
-        .add_target(json::file("target/foo.log")?)
-        .add_target(human::stdout()?);
+    let out = convey::new()
+        .add_target(json::file("target/foo.log")?)?
+        .add_target(human::stdout()?)?;
 
     #[derive(Serialize, RenderOutput)]
     struct ErrorMessage {

@@ -1,28 +1,21 @@
-extern crate convey;
-extern crate failure;
-extern crate rand;
+use convey;
+use failure;
 
 use convey::{human, json};
-use rand::distributions::Distribution;
-use rand::distributions::Range;
-use rand::thread_rng;
+use rand::{thread_rng, Rng};
 use std::thread;
 use std::time::Duration;
 
 fn main() -> Result<(), failure::Error> {
     let out = convey::new()
-        .add_target(json::file("target/foo.log")?)
-        .add_target(human::stdout()?);
+        .add_target(json::file("target/foo.log")?)?
+        .add_target(human::stdout()?)?;
 
     let mut threads = vec![];
     for i in 0..100 {
-        let mut out = out.clone();
+        let out = out.clone();
         let t = thread::spawn(move || {
-            let dur = Duration::from_millis({
-                let mut rng = thread_rng();
-                let range = Range::new(0u64, 1);
-                range.sample(&mut rng)
-            });
+            let dur = Duration::from_millis(thread_rng().gen_range(0u64, 1));
             thread::sleep(dur);
             out.print(&format!("thread {} says hello", i))
         });

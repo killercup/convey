@@ -15,9 +15,9 @@ fn struct_with_named_fields_of_primitive_types() -> Result<(), convey::Error> {
 
     let human = convey::human::test();
     let json = convey::json::test();
-    let mut out = convey::new()
-        .add_target(human.target())
-        .add_target(json.target());
+    let out = convey::new()
+        .add_target(human.target())?
+        .add_target(json.target())?;
 
     out.print(&ErrorMessage {
         code: 42,
@@ -48,9 +48,9 @@ fn tuple_struct_of_primitive_types() -> Result<(), convey::Error> {
 
     let human = convey::human::test();
     let json = convey::json::test();
-    let mut out = convey::new()
-        .add_target(human.target())
-        .add_target(json.target());
+    let out = convey::new()
+        .add_target(human.target())?
+        .add_target(json.target())?;
 
     out.print(&ErrorMessage(42, String::from("Derive works")))?;
     out.flush()?;

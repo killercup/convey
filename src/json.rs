@@ -1,11 +1,12 @@
 //! JSON output
 
+use crate::{Error, Target};
+use failure::ResultExt;
 use serde::Serialize;
 use serde_json::to_vec as write_json;
 use std::io::Write;
 use std::path::Path;
 use std::sync::Arc;
-use {Error, Target};
 
 /// Construct a new JSON output target that writes to stdout
 pub fn stdout() -> Result<Target, Error> {
@@ -23,7 +24,11 @@ pub fn file<T: AsRef<Path>>(name: T) -> Result<Target, Error> {
         use std::io::BufWriter;
 
         let target = if path.exists() {
-            let mut f = OpenOptions::new().write(true).append(true).open(&path)?;
+            let mut f = OpenOptions::new()
+                .write(true)
+                .append(true)
+                .open(&path)
+                .with_context(|_| format!("Can't open file `{}` as JSON target", path.display()))?;
             f.write_all(b"\n")?;
 
             f
@@ -56,28 +61,29 @@ impl Formatter {
 
     /// Write a serializable item to the JSON formatter
     pub fn write<T: Serialize>(&self, item: &T) -> Result<(), Error> {
-        self.send(Message::Write(write_json(item)?));
+        self.send(Message::Write(write_json(item)?))?;
         Ok(())
     }
 
     /// Immediately write all buffered output
     pub fn flush(&self) -> Result<(), Error> {
-        self.send(Message::Flush);
+        self.send(Message::Flush)?;
 
         match self.inner.receiver.recv() {
-            Some(Response::Flushed) => Ok(()),
+            Ok(Response::Flushed) => Ok(()),
             msg => Err(Error::worker_error(format!("unexpected message {:?}", msg))),
         }
     }
 
     /// Write a separator after a record
     pub(crate) fn write_separator(&mut self) -> Result<(), Error> {
-        self.send(Message::Write(vec![b'\n']));
+        self.send(Message::Write(vec![b'\n']))?;
         Ok(())
     }
 
-    fn send(&self, msg: Message) {
-        self.inner.sender.send(msg);
+    fn send(&self, msg: Message) -> Result<(), Error> {
+        self.inner.sender.send(msg)?;
+        Ok(())
     }
 }
 
@@ -101,11 +107,11 @@ impl InternalFormatter {
         let worker = thread::spawn(move || {
             let mut buffer = match init() {
                 Ok(buf) => {
-                    response_sender.send(Response::StartedSuccessfully);
+                    let _ = response_sender.send(Response::StartedSuccessfully);
                     buf
                 }
                 Err(e) => {
-                    response_sender.send(Response::Error(e));
+                    let _ = response_sender.send(Response::Error(e));
                     return;
                 }
             };
@@ -124,14 +130,14 @@ impl InternalFormatter {
 
             loop {
                 match message_receiver.recv() {
-                    Some(Message::Write(data)) => {
+                    Ok(Message::Write(data)) => {
                         let _ = buffer.write_all(&data).map_err(maybe_log_error!());
                     }
-                    Some(Message::Flush) => {
+                    Ok(Message::Flush) => {
                         let _ = buffer.flush().map_err(maybe_log_error!());
-                        response_sender.send(Response::Flushed);
+                        let _ = response_sender.send(Response::Flushed);
                     }
-                    Some(Message::Exit) | None => {
+                    Ok(Message::Exit) | Err(_) => {
                         break;
                     }
                 };
@@ -139,8 +145,8 @@ impl InternalFormatter {
         });
 
         match response_receiver.recv() {
-            Some(Response::Error(error)) => Err(error),
-            Some(Response::StartedSuccessfully) => Ok(InternalFormatter {
+            Ok(Response::Error(error)) => Err(error),
+            Ok(Response::StartedSuccessfully) => Ok(InternalFormatter {
                 worker: Some(worker),
                 sender: message_sender,
                 receiver: response_receiver,
@@ -152,7 +158,7 @@ impl InternalFormatter {
 
 impl Drop for InternalFormatter {
     fn drop(&mut self) {
-        self.sender.send(Message::Exit);
+        let _ = self.sender.send(Message::Exit);
         // TODO: Docs say this may panic, so have a look at how to deal with that.
         if let Some(worker) = self.worker.take() {
             let _ = worker.join();
@@ -197,7 +203,7 @@ enum Response {
 /// }
 ///
 /// fn main() -> Result<(), convey::Error> {
-///     let mut out = convey::new().add_target(convey::human::stdout()?);
+///     let mut out = convey::new().add_target(convey::human::stdout()?)?;
 ///     out.print(Message { author: "Pascal".into(), body: "Lorem ipsum dolor".into() })?;
 ///     Ok(())
 /// }
@@ -215,9 +221,9 @@ macro_rules! render_json {
 
 mod test_helper {
     use super::Formatter;
+    use crate::test_buffer::TestBuffer;
+    use crate::Target;
     use termcolor::Buffer;
-    use test_buffer::TestBuffer;
-    use Target;
 
     /// Create a test output target
     ///
@@ -232,7 +238,7 @@ mod test_helper {
     ///
     /// fn main() -> Result<(), convey::Error> {
     ///     let test_target = convey::json::test();
-    ///     let mut out = convey::new().add_target(test_target.target());
+    ///     let mut out = convey::new().add_target(test_target.target())?;
     ///
     ///     #[derive(Serialize)]
     ///     struct Message {
@@ -284,8 +290,9 @@ mod test_helper {
 
 #[cfg(test)]
 mod tests {
-    use assert_fs::*;
-    use json;
+    use crate::json;
+    use assert_fs::prelude::*;
+    use assert_fs::TempDir;
     use predicates::prelude::*;
 
     type Res = Result<(), ::failure::Error>;
@@ -339,7 +346,7 @@ mod tests {
         log_file.assert(predicate::path::exists());
 
         let target = json::file(log_file.path())?;
-        let mut output = ::new().add_target(target);
+        let output = crate::new().add_target(target)?;
         output.print("wtf")?;
         output.flush()?;
 

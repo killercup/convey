@@ -12,7 +12,7 @@ pub struct Error {
 }
 
 impl Fail for Error {
-    fn cause(&self) -> Option<&Fail> {
+    fn cause(&self) -> Option<&dyn Fail> {
         self.inner.cause()
     }
 
@@ -22,13 +22,16 @@ impl Fail for Error {
 }
 
 impl Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         Display::fmt(&self.inner, f)
     }
 }
 
 #[derive(Fail, Debug)]
 enum InnerError {
+    #[fail(display = "{}", _0)]
+    Custom(Context<String>),
+
     #[fail(display = "IO error: {}", _0)]
     Io(io::Error),
 
@@ -43,6 +46,13 @@ enum InnerError {
 
     #[fail(display = "Error syncing output")]
     SyncError(String),
+
+    #[fail(display = "Error sending data to channel")]
+    ChannelError(String),
+
+    #[cfg(feature = "log")]
+    #[fail(display = "{}", _0)]
+    SetLoggerError(log::SetLoggerError),
 }
 
 impl Error {
@@ -55,6 +65,22 @@ impl Error {
     pub(crate) fn sync_error<T>(x: &PoisonError<T>) -> Self {
         Error {
             inner: Context::new(InnerError::SyncError(x.to_string())),
+        }
+    }
+}
+
+impl From<InnerError> for Error {
+    fn from(kind: InnerError) -> Error {
+        Error {
+            inner: Context::new(kind),
+        }
+    }
+}
+
+impl From<Context<String>> for Error {
+    fn from(inner: Context<String>) -> Error {
+        Error {
+            inner: Context::new(InnerError::Custom(inner)),
         }
     }
 }
@@ -79,6 +105,23 @@ impl From<JsonError> for Error {
     fn from(x: JsonError) -> Self {
         Error {
             inner: Context::new(InnerError::Json(x)),
+        }
+    }
+}
+
+impl<T: std::fmt::Debug> From<crossbeam_channel::SendError<T>> for Error {
+    fn from(x: crossbeam_channel::SendError<T>) -> Self {
+        Error {
+            inner: Context::new(InnerError::ChannelError(x.to_string())),
+        }
+    }
+}
+
+#[cfg(feature = "log")]
+impl From<log::SetLoggerError> for Error {
+    fn from(x: log::SetLoggerError) -> Self {
+        Error {
+            inner: Context::new(InnerError::SetLoggerError(x)),
         }
     }
 }
