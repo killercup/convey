@@ -29,6 +29,9 @@ impl Display for Error {
 
 #[derive(Fail, Debug)]
 enum InnerError {
+    #[fail(display = "{}", _0)]
+    Custom(Context<String>),
+
     #[fail(display = "IO error: {}", _0)]
     Io(io::Error),
 
@@ -62,6 +65,22 @@ impl Error {
     pub(crate) fn sync_error<T>(x: &PoisonError<T>) -> Self {
         Error {
             inner: Context::new(InnerError::SyncError(x.to_string())),
+        }
+    }
+}
+
+impl From<InnerError> for Error {
+    fn from(kind: InnerError) -> Error {
+        Error {
+            inner: Context::new(kind),
+        }
+    }
+}
+
+impl From<Context<String>> for Error {
+    fn from(inner: Context<String>) -> Error {
+        Error {
+            inner: Context::new(InnerError::Custom(inner)),
         }
     }
 }

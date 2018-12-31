@@ -1,6 +1,7 @@
 //! JSON output
 
 use crate::{Error, Target};
+use failure::ResultExt;
 use serde::Serialize;
 use serde_json::to_vec as write_json;
 use std::io::Write;
@@ -23,7 +24,11 @@ pub fn file<T: AsRef<Path>>(name: T) -> Result<Target, Error> {
         use std::io::BufWriter;
 
         let target = if path.exists() {
-            let mut f = OpenOptions::new().write(true).append(true).open(&path)?;
+            let mut f = OpenOptions::new()
+                .write(true)
+                .append(true)
+                .open(&path)
+                .with_context(|_| format!("Can't open file `{}` as JSON target", path.display()))?;
             f.write_all(b"\n")?;
 
             f
