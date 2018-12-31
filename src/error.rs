@@ -47,6 +47,7 @@ enum InnerError {
     #[fail(display = "Error sending data to channel")]
     ChannelError(String),
 
+    #[cfg(feature = "log")]
     #[fail(display = "{}", _0)]
     SetLoggerError(log::SetLoggerError),
 }
@@ -97,6 +98,7 @@ impl<T: std::fmt::Debug> From<crossbeam_channel::SendError<T>> for Error {
     }
 }
 
+#[cfg(feature = "log")]
 impl From<log::SetLoggerError> for Error {
     fn from(x: log::SetLoggerError) -> Self {
         Error {

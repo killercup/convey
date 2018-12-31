@@ -4,13 +4,17 @@ rust:
 - beta
 - nightly
 
+script:
+- cargo test --all
+- cargo check --no-default-features
+
 matrix:
   include:
-  - rust: 1.30.1
+  - rust: 1.31.1
     env: CLIPPY=YESPLEASE
     before_script: rustup component add clippy-preview
     script: cargo clippy --all-targets --all -- -D warnings
-  - rust: 1.30.1
+  - rust: 1.31.1
     env: RUSTFMT=YESPLEASE
     before_script: rustup component add rustfmt-preview
     script: cargo fmt --all -- --check

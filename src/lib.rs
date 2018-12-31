@@ -28,6 +28,7 @@ extern crate serde_json;
 extern crate proptest;
 #[cfg(test)]
 extern crate assert_fs;
+#[cfg(feature = "log")]
 extern crate log;
 #[cfg(test)]
 extern crate predicates;
@@ -46,6 +47,7 @@ pub struct Output {
 #[derive(Default, Clone)]
 struct InnerOutput {
     targets: Vec<Target>,
+    #[cfg(feature = "log")]
     log_level: Option<log::Level>,
 }
 
@@ -73,6 +75,7 @@ impl Output {
     /// log::error!("oh noes");
     /// # Ok(()) }
     /// ```
+    #[cfg(feature = "log")]
     pub fn use_as_logger(self, level: log::Level) -> Result<Self, Error> {
         {
             let mut o = self.inner.lock().map_err(|e| Error::sync_error(&e))?;
@@ -268,6 +271,7 @@ pub mod components;
 pub mod human;
 pub mod json;
 
+#[cfg(feature = "log")]
 mod logging;
 
 mod test_buffer;
