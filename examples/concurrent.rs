@@ -1,6 +1,5 @@
-extern crate convey;
-extern crate failure;
-extern crate rand;
+use convey;
+use failure;
 
 use convey::{human, json};
 use rand::{thread_rng, Rng};
@@ -14,7 +13,7 @@ fn main() -> Result<(), failure::Error> {
 
     let mut threads = vec![];
     for i in 0..100 {
-        let mut out = out.clone();
+        let out = out.clone();
         let t = thread::spawn(move || {
             let dur = Duration::from_millis(thread_rng().gen_range(0u64, 1));
             thread::sleep(dur);

@@ -14,24 +14,7 @@
 
 #![warn(missing_docs)]
 
-extern crate crossbeam_channel;
-extern crate failure;
-extern crate failure_derive;
-extern crate serde;
-extern crate termcolor;
-#[macro_use]
-extern crate serde_derive;
-#[cfg_attr(test, macro_use)]
-extern crate serde_json;
-#[cfg(test)]
-#[macro_use]
-extern crate proptest;
-#[cfg(test)]
-extern crate assert_fs;
-#[cfg(feature = "log")]
-extern crate log;
-#[cfg(test)]
-extern crate predicates;
+use failure;
 
 /// Create a new output
 pub fn new() -> Output {
@@ -128,7 +111,7 @@ enum InnerTarget {
 }
 
 mod error;
-pub use error::Error;
+pub use crate::error::Error;
 
 impl Output {
     /// Print some item to the currently active output targets
@@ -158,11 +141,11 @@ impl Output {
         for target in &o.targets {
             match &target.inner {
                 InnerTarget::Human(fmt) => {
-                    let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
+                    let fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
                     fmt.flush()?;
                 }
                 InnerTarget::Json(fmt) => {
-                    let mut fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
+                    let fmt = fmt.lock().map_err(|e| Error::sync_error(&e))?;
                     fmt.flush()?;
                 }
             }

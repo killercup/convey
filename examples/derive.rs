@@ -1,5 +1,5 @@
-extern crate convey;
-extern crate failure;
+use convey;
+use failure;
 #[macro_use]
 extern crate convey_derive;
 #[macro_use]

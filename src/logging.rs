@@ -1,7 +1,7 @@
 use crate::{components::text, span};
 use log::Level;
 
-#[derive(Serialize)]
+#[derive(serde_derive::Serialize)]
 pub struct LogMessage {
     level: log::Level,
     path: String,
@@ -34,7 +34,7 @@ impl crate::Render for LogMessage {
 }
 
 impl log::Log for crate::Output {
-    fn enabled(&self, metadata: &log::Metadata) -> bool {
+    fn enabled(&self, metadata: &log::Metadata<'_>) -> bool {
         self.inner
             .lock()
             .ok()
@@ -43,7 +43,7 @@ impl log::Log for crate::Output {
             .unwrap_or(false)
     }
 
-    fn log(&self, record: &log::Record) {
+    fn log(&self, record: &log::Record<'_>) {
         if self.enabled(record.metadata()) {
             let _ = self.print(&LogMessage {
                 level: record.level(),

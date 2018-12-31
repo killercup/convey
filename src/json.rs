@@ -1,11 +1,11 @@
 //! JSON output
 
+use crate::{Error, Target};
 use serde::Serialize;
 use serde_json::to_vec as write_json;
 use std::io::Write;
 use std::path::Path;
 use std::sync::Arc;
-use {Error, Target};
 
 /// Construct a new JSON output target that writes to stdout
 pub fn stdout() -> Result<Target, Error> {
@@ -216,9 +216,9 @@ macro_rules! render_json {
 
 mod test_helper {
     use super::Formatter;
+    use crate::test_buffer::TestBuffer;
+    use crate::Target;
     use termcolor::Buffer;
-    use test_buffer::TestBuffer;
-    use Target;
 
     /// Create a test output target
     ///
@@ -285,9 +285,9 @@ mod test_helper {
 
 #[cfg(test)]
 mod tests {
+    use crate::json;
     use assert_fs::prelude::*;
     use assert_fs::TempDir;
-    use json;
     use predicates::prelude::*;
 
     type Res = Result<(), ::failure::Error>;
@@ -341,7 +341,7 @@ mod tests {
         log_file.assert(predicate::path::exists());
 
         let target = json::file(log_file.path())?;
-        let output = ::new().add_target(target)?;
+        let output = crate::new().add_target(target)?;
         output.print("wtf")?;
         output.flush()?;
 

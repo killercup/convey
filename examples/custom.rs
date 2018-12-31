@@ -1,4 +1,4 @@
-extern crate failure;
+use failure;
 #[macro_use]
 extern crate convey;
 #[macro_use]

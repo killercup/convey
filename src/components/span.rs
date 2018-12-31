@@ -1,5 +1,5 @@
+use crate::{human, json, Error, Render};
 use termcolor::ColorSpec;
-use {human, json, Error, Render};
 
 /// Construct a new, empty span
 pub fn span() -> Span {
@@ -54,7 +54,7 @@ macro_rules! span {
 
 #[derive(Default)]
 pub struct Span {
-    items: Vec<Box<Render>>,
+    items: Vec<Box<dyn Render>>,
     fg: Option<::termcolor::Color>,
     bg: Option<::termcolor::Color>,
     bold: bool,
@@ -126,8 +126,8 @@ impl Render for Span {
 #[cfg(test)]
 mod test {
     use super::span;
-    use components::text;
-    use {human, json, Error, Render};
+    use crate::components::text;
+    use crate::{human, json, Error, Render};
 
     #[test]
     fn renders_span_children() -> Result<(), Error> {
@@ -149,7 +149,7 @@ mod test {
     #[test]
     fn test_colored_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
-        let out = ::new().add_target(test_target.target())?;
+        let out = crate::new().add_target(test_target.target())?;
 
         out.print(span().add_item("hello").fg("green")?.bg("blue")?)?;
         out.flush()?;
@@ -164,7 +164,7 @@ mod test {
     #[test]
     fn test_bold_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
-        let out = ::new().add_target(test_target.target())?;
+        let out = crate::new().add_target(test_target.target())?;
 
         out.print(span().add_item("hello").bold(true)?)?;
         out.flush()?;
@@ -179,7 +179,7 @@ mod test {
     #[test]
     fn test_intense_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
-        let out = ::new().add_target(test_target.target())?;
+        let out = crate::new().add_target(test_target.target())?;
 
         out.print(span().add_item("hello").fg("green")?.intense(true)?)?;
         out.flush()?;
@@ -194,7 +194,7 @@ mod test {
     #[test]
     fn test_underline_output() -> Result<(), Error> {
         let test_target = human::test_with_color();
-        let out = ::new().add_target(test_target.target())?;
+        let out = crate::new().add_target(test_target.target())?;
 
         out.print(span().add_item("hello").underline(true)?)?;
         out.flush()?;

@@ -6,6 +6,7 @@ description = "A Rust create for outputting information and log messages for hum
 license = "Apache-2.0 OR MIT"
 readme = "README.md"
 repository = "https://github.com/killercup/convey"
+edition = "2018"
 
 [workspace]
 members = [

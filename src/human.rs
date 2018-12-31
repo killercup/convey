@@ -1,8 +1,8 @@
 //! Human output
 
+use crate::{Error, Target};
 use std::sync::Arc;
 use termcolor::{ColorChoice, ColorSpec, StandardStream, WriteColor};
-use {Error, Target};
 
 /// Construct a new human output target that writes to stdout
 pub fn stdout() -> Result<Target, Error> {
@@ -215,8 +215,8 @@ macro_rules! render_for_humans {
 
 mod test_helper {
     use super::Formatter;
+    use crate::{test_buffer::TestBuffer, Target};
     use termcolor::Buffer;
-    use {test_buffer::TestBuffer, Target};
 
     /// Create a test output target
     ///

@@ -1,4 +1,4 @@
-use {human, json, Error, Render};
+use crate::{human, json, Error, Render};
 
 /// Render some text
 pub fn text<T: AsRef<str>>(input: T) -> Text {
@@ -12,7 +12,7 @@ pub fn newline() -> Text {
     text("\n")
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, serde_derive::Serialize)]
 pub struct Text(String);
 
 impl Render for Text {
@@ -30,7 +30,8 @@ impl Render for Text {
 #[cfg(test)]
 mod test {
     use super::text;
-    use {human, json, Render};
+    use crate::{human, json, Render};
+    use proptest::{prop_assert, prop_assert_eq, proptest, proptest_helper};
 
     proptest! {
         #[test]
@@ -43,7 +44,7 @@ mod test {
 
             let json = json::test();
             item.render_json(&mut json.formatter()).unwrap();
-            prop_assert_eq!(json.to_string(), json!(s).to_string());
+            prop_assert_eq!(json.to_string(), serde_json::json!(s).to_string());
         }
     }
 }
