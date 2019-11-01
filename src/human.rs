@@ -200,12 +200,12 @@ enum Response {
 #[macro_export]
 macro_rules! render_for_humans {
     ($this:ident -> []) => {
-        fn render_for_humans(&self, fmt: &mut $crate::human::Formatter) -> Result<(), $crate::Error> {
+        fn render_for_humans(&self, fmt: &mut $crate::human::Formatter) -> ::std::result::Result<(), $crate::Error> {
             Ok(())
         }
     };
     ($self:ident -> [$($item:expr,)*]) => {
-        fn render_for_humans(&$self, fmt: &mut $crate::human::Formatter) -> Result<(), $crate::Error> {
+        fn render_for_humans(&$self, fmt: &mut $crate::human::Formatter) -> ::std::result::Result<(), $crate::Error> {
             let span = $crate::span!([ $( $item, )* ]);
             span.render_for_humans(fmt)?;
             Ok(())

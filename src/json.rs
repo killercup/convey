@@ -212,7 +212,7 @@ enum Response {
 #[macro_export]
 macro_rules! render_json {
     () => {
-        fn render_json(&self, fmt: &mut $crate::json::Formatter) -> Result<(), $crate::Error> {
+        fn render_json(&self, fmt: &mut $crate::json::Formatter) -> ::std::result::Result<(), $crate::Error> {
             fmt.write(self)?;
             Ok(())
         }
