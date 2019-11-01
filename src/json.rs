@@ -279,11 +279,13 @@ mod test_helper {
         pub fn target(&self) -> Target {
             Target::json(self.formatter())
         }
+    }
 
-        pub fn to_string(&self) -> String {
+    impl ::std::fmt::Display for TestTarget {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
             let target = self.buffer.0.clone();
             let buffer = target.read().unwrap();
-            String::from_utf8_lossy(buffer.as_slice()).to_string()
+            write!(f, "{}", String::from_utf8_lossy(buffer.as_slice()))
         }
     }
 }
