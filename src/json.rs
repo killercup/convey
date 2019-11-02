@@ -212,7 +212,7 @@ enum Response {
 #[macro_export]
 macro_rules! render_json {
     () => {
-        fn render_json(&self, fmt: &mut $crate::json::Formatter) -> Result<(), $crate::Error> {
+        fn render_json(&self, fmt: &mut $crate::json::Formatter) -> ::std::result::Result<(), $crate::Error> {
             fmt.write(self)?;
             Ok(())
         }
@@ -279,11 +279,13 @@ mod test_helper {
         pub fn target(&self) -> Target {
             Target::json(self.formatter())
         }
+    }
 
-        pub fn to_string(&self) -> String {
+    impl ::std::fmt::Display for TestTarget {
+        fn fmt(&self, f: &mut ::std::fmt::Formatter) -> Result<(), ::std::fmt::Error> {
             let target = self.buffer.0.clone();
             let buffer = target.read().unwrap();
-            String::from_utf8_lossy(buffer.as_slice()).to_string()
+            write!(f, "{}", String::from_utf8_lossy(buffer.as_slice()))
         }
     }
 }
