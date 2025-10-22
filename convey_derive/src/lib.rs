@@ -68,7 +68,8 @@ pub fn render_output(input: TokenStream) -> TokenStream {
                 let field_count = s.fields.iter().count();
                 let fields = (0..field_count)
                         .fold(Vec::new(), |mut res, i| {
-                            res.push(quote! { span = span.add_item(convey::components::text(&self.#i.to_string())); });
+                            let field_name = syn::Index::from(i);
+                            res.push(quote! { span = span.add_item(convey::components::text(&self.#field_name.to_string())); });
                             if i < field_count - 1 {
                                 res.push(quote! { span = span.add_item(", "); });
                             }
